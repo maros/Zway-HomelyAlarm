@@ -1,0 +1,137 @@
+/*** HomelyAlarm Z-Way HA module *******************************************
+
+Version: 1.0.0
+(c) Maroš Kollár, 2015
+-----------------------------------------------------------------------------
+Author: maros@k-1.com <maros@k-1.com>
+Description:
+    This module allows to send notifications via HomelyAlarm server
+    https://github.com/maros/HomelyAlarm
+
+******************************************************************************/
+
+function HomelyAlarm (id, controller) {
+    // Call superconstructor first (AutomationModule)
+    HomelyAlarm.super_.call(this, id, controller);
+}
+
+inherits(HomelyAlarm, AutomationModule);
+
+_module = HomelyAlarm;
+
+// ----------------------------------------------------------------------------
+// --- Module instance initialized
+// ----------------------------------------------------------------------------
+
+HomelyAlarm.prototype.init = function (config) {
+    HomelyAlarm.super_.prototype.init.call(this, config);
+
+    this.handler = this.onNotificationHandler();
+    
+    this.secret = config.secret.toString();
+    this.server = config.server.toString();
+
+    this.controller.on('notifications.push', this.handler);
+};
+
+HomelyAlarm.prototype.stop = function () {
+    NotificationSMSru.super_.prototype.stop.call(this);
+
+    this.controller.off('notifications.push', this.handler);
+};
+
+// ----------------------------------------------------------------------------
+// --- Module methods
+// ----------------------------------------------------------------------------
+
+HomelyAlarm.prototype.onNotificationHandler = function () {
+    var self = this;
+    
+    self.remoteCall('');
+
+//local url           = ALARM.SERVER.."/alarm/"..action.."?"
+//    
+//    if params == nil then
+//        params = {}
+//    end
+//    params["time"]      = os.time()
+//    params["status"]    = luup.variable_get(SID.SELF,"Status", SELF)
+//    
+//    for key,value in pairs(params) do
+//        url = url.."&"..key.."="..string.url_encode(value)
+//    end
+//    local signature     = hmac_sha1(ALARM.SECRET,url)
+//    local respbody      = {}
+//    
+//    luup.log("[MyHome] Calling remote alarm "..action..":"..url..":"..signature)
+//    local result, code, headers = HTTP.request{
+//        url     = url,
+//        method  = "POST",
+//        headers = {
+//            ["X-HomelyAlarm-Signature"] = signature
+//        },
+//        sink    = ltn12.sink.table(respbody)
+//    }
+//    
+//    if code ~= 200 then
+//        respbody = table.concat(respbody)
+//        luup.log("[MyHome] Failed remote alarm with status "..code.." (".. respbody.." "..url..")",1)
+//    end
+//    
+    
+    return function(notice) {
+        http.request({
+            method: 'POST',
+            url: th,
+            data: {
+                api_id: self.api_key,
+                to: self.phone,
+                text: self.prefix + " " + notice.message
+            }
+        });
+    }
+}
+
+HomelyAlarm.prototype.remoteCall = function(action,params) {
+    var self = this;
+    
+    executeFile(config.libPath + "/sha.js");
+    
+    // Build query_string
+    params = params || {};
+    params.time = (new Date).getTime();
+    var query_string = _.reduce(
+        params,
+        function ( components, value, key ) {
+          components.push( key + '=' + encodeURIComponent( value ) );
+          return components;
+        },
+        []
+    ).join( '&' );
+    
+    
+    // Build URL
+    var url = this.server;
+    if (!url.match(/\/$/)) {
+        url = url + '/';
+    }
+    url = url + action;
+    
+    // Build signature
+    var sha = new jsSHA(url, "TEXT");
+    var signature = sha.getHMAC(this.secret, "TEXT", "SHA-512", "HEX");
+    
+    // HTTP request
+    http.request({
+        method: 'POST',
+        url: url,
+        data: query_string,
+        async: true,
+        headers: {
+            "X-HomelyAlarm-Signature": signature
+        },
+        success: function(response) {},
+        error: function(response) {}
+    });
+}
+ 

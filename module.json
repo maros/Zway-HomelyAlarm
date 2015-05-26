@@ -1,0 +1,44 @@
+{
+    "dependencies": [],
+    "singleton": false,
+    "category": "notifications",
+    "author": "Maroš Kollár",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "",
+    "version": "1.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/maros/Zway-HomelyAlarm"
+    },
+    "defaults": {
+        "title": "HomelyAlarm Notifications",
+        "description": "Sends notifications via HomelyAlarm server",
+        "secret": "",
+        "server": "",
+    },
+    "schema": {
+        "description": "Sends notifications via HomelyAlarm server available at https://github.com/maros/HomelyAlarm",
+        "type": "object",
+        "properties": {
+            "server": {
+                "required": true,
+                "format": "uri",
+            },
+            "secret": {
+                "required": true
+            },
+        },
+        "required": true
+    },
+    "options": {
+        "fields": {
+            "server": {
+                "label": "Shared secret for HomelyAlarm server"
+            },
+            "secret": {
+                "label": "Base URL for HomelyAlarm server"
+            },
+        }
+    }
+}
