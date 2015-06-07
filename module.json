@@ -15,7 +15,7 @@
         "title": "HomelyAlarm Notifications",
         "description": "Sends notifications via HomelyAlarm server",
         "secret": "",
-        "server": "",
+        "server": ""
     },
     "schema": {
         "description": "Sends notifications via HomelyAlarm server available at https://github.com/maros/HomelyAlarm",
@@ -23,11 +23,11 @@
         "properties": {
             "server": {
                 "required": true,
-                "format": "uri",
+                "format": "uri"
             },
             "secret": {
                 "required": true
-            },
+            }
         },
         "required": true
     },
@@ -38,7 +38,7 @@
             },
             "secret": {
                 "label": "Base URL for HomelyAlarm server"
-            },
+            }
         }
     }
 }
