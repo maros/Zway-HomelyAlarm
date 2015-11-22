@@ -1,30 +1,30 @@
-/*** HomelyAlarm Z-Way HA module *******************************************
+/*** NotificationHomelyAlarm Z-Way HA module *******************************************
 
 Version: 1.0.0
 (c) Maroš Kollár, 2015
 -----------------------------------------------------------------------------
-Author: maros@k-1.com <maros@k-1.com>
+Author: Maroš Kollár <maros@k-1.com>
 Description:
-    This module allows to send notifications via HomelyAlarm server
-    https://github.com/maros/HomelyAlarm
+    This module allows to send notifications via NotificationHomelyAlarm server
+    https://github.com/maros/NotificationHomelyAlarm
 
 ******************************************************************************/
 
-function HomelyAlarm (id, controller) {
+function NotificationHomelyAlarm (id, controller) {
     // Call superconstructor first (AutomationModule)
-    HomelyAlarm.super_.call(this, id, controller);
+    NotificationHomelyAlarm.super_.call(this, id, controller);
 }
 
-inherits(HomelyAlarm, AutomationModule);
+inherits(NotificationHomelyAlarm, AutomationModule);
 
-_module = HomelyAlarm;
+_module = NotificationHomelyAlarm;
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-HomelyAlarm.prototype.init = function (config) {
-    HomelyAlarm.super_.prototype.init.call(this, config);
+NotificationHomelyAlarm.prototype.init = function (config) {
+    NotificationHomelyAlarm.super_.prototype.init.call(this, config);
 
     this.handler = this.onNotificationHandler();
     
@@ -34,7 +34,7 @@ HomelyAlarm.prototype.init = function (config) {
     this.controller.on('notifications.push', this.handler);
 };
 
-HomelyAlarm.prototype.stop = function () {
+NotificationHomelyAlarm.prototype.stop = function () {
     NotificationSMSru.super_.prototype.stop.call(this);
 
     this.controller.off('notifications.push', this.handler);
@@ -44,10 +44,10 @@ HomelyAlarm.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-HomelyAlarm.prototype.onNotificationHandler = function () {
+NotificationHomelyAlarm.prototype.onNotificationHandler = function () {
     var self = this;
     
-    self.remoteCall('');
+    self.remoteCall('event');
 
 //local url           = ALARM.SERVER.."/alarm/"..action.."?"
 //    
@@ -68,7 +68,7 @@ HomelyAlarm.prototype.onNotificationHandler = function () {
 //        url     = url,
 //        method  = "POST",
 //        headers = {
-//            ["X-HomelyAlarm-Signature"] = signature
+//            ["X-NotificationHomelyAlarm-Signature"] = signature
 //        },
 //        sink    = ltn12.sink.table(respbody)
 //    }
@@ -92,7 +92,7 @@ HomelyAlarm.prototype.onNotificationHandler = function () {
     }
 }
 
-HomelyAlarm.prototype.remoteCall = function(action,params) {
+NotificationHomelyAlarm.prototype.remoteCall = function(action,params) {
     var self = this;
     
     executeFile(config.libPath + "/sha.js");
@@ -108,7 +108,6 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
         },
         []
     ).join( '&' );
-    
     
     // Build URL
     var url = this.server;
@@ -126,10 +125,10 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
         method: 'POST',
         url: url,
         data: query_string,
-        async: true,
         headers: {
-            "X-HomelyAlarm-Signature": signature
+            "X-NotificationHomelyAlarm-Signature": signature
         },
+        async: true,
         success: function(response) {},
         error: function(response) {}
     });
