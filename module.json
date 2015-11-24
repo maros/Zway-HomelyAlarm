@@ -13,12 +13,82 @@
     "options":{
         "fields": {
             "server": {
-                "label": "__server_label__"
+                "label": "__server_label__",
+                "order": 1
             },
             "secret": {
-                "label": "__secret_label__"
+                "label": "__secret_label__",
+                "order": 2
+            },
+            "recipients": {
+                "label": "__recipients_label__",
+                "order": 3,
+                "items" : {
+                    "fields": {
+                        "severity": {
+                            "label": "__severity_label__",
+                            "helper": "__severity_recipient_helper__",
+                            "order": 1,
+                            "optionLabels" : [
+                                "__severity_1__",
+                                "__severity_2__",
+                                "__severity_3__"
+                            ]
+                        },
+                        "telephone": {
+                            "order": 3,
+                            "label": "__telephone_label__"
+                        },
+                        "voice": {
+                            "order": 4,
+                            "label": "__voice_label__"
+                        },
+                        "sms": {
+                            "order": 5,
+                            "label": "__sms_label__"
+                        },
+                        "email": {
+                            "order": 2,
+                            "label": "__email_label__"
+                        }
+                    }
+                }
+            },
+            "events": {
+                "label": "__events_label__",
+                "order": 4,
+                "items" : {
+                    "fields": {
+                        "severity": {
+                            "label": "__severity_label__",
+                            "helper": "__severity_event_helper__",
+                            "order": 2,
+                            "optionLabels" : [
+                                "__severity_1__",
+                                "__severity_2__",
+                                "__severity_3__"
+                            ]
+                        },
+                        "type": {
+                            "label": "__eventtype_label__",
+                            "order": 1,
+                            "optionLabels" : [
+                                  "__type_intrusion__",
+                                  "__type_flood__",
+                                  "__type_smoke__",
+                                  "__type_gas__",
+                                  "__type_heat__",
+                                  "__type_cold__",
+                                  "__type_tamper__",
+                                  "__type_other__",
+                                  "__type_rain__"
+                           ],
+                           "type" : "select"
+                        }
+                    }
+                }
             }
-        }
+        }   
     },
     "repository":{
         "source":"https://github.com/maros/Zway-NotificationHomelyAlarm",
@@ -32,6 +102,67 @@
             },
             "secret": {
                 "required": true
+            },
+            "recipients": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                    "type": "object",
+                    "required": true,
+                    "properties": {
+                        "severity": {
+                            "enum" : [
+                                1,
+                                2,
+                                3
+                            ],
+                            "required": true
+                        },
+                        "telephone": {
+                            "pattern": "\\+[1-9][0-9]+"
+                        },
+                        "voice": {
+                            "type" : "boolean"
+                        },
+                        "sms": {
+                            "type" : "boolean"
+                        },
+                        "email": {
+                            "pattern": ".+@.+"
+                        }
+                    }
+                }
+            },
+            "events": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "required": true,
+                            "enum" : [
+                              "intrusion",
+                              "flood",
+                              "smoke",
+                              "gas",
+                              "heat",
+                              "cold",
+                              "tamper",
+                              "other",
+                              "rain"
+                             ]
+                        },
+                          "severity": {
+                              "enum" : [
+                                    0,
+                                    1,
+                                    2
+                                ],
+                                "required": true
+                          }
+                    }
+                }
             }
         },
         "required":true,
