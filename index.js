@@ -5,8 +5,8 @@ Version: 1.0.0
 -----------------------------------------------------------------------------
 Author: Maroš Kollár <maros@k-1.com>
 Description:
-    This module allows to send notifications via NotificationHomelyAlarm server
-    https://github.com/maros/NotificationHomelyAlarm
+    This module allows to send alarm notifications via NotificationHomelyAlarm
+    server https://github.com/maros/NotificationHomelyAlarm
 
 ******************************************************************************/
 
@@ -31,6 +31,8 @@ NotificationHomelyAlarm.prototype.init = function (config) {
     this.handler = _bind(self.onNotificationHandler,self);
     
     this.controller.on('notifications.push', this.handler);
+    
+    _.each('')
 };
 
 NotificationHomelyAlarm.prototype.stop = function () {
@@ -43,12 +45,30 @@ NotificationHomelyAlarm.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
+NotificationHomelyAlarm.prototype.events = [
+    "alarm", "delayed_alarm", "cancel", "warning"
+];
+
+NotificationHomelyAlarm.prototype.types = [
+    "intrusion", "flood", "smoke", "gas", "heat", "cold", "tamper", "other", "rain"
+];
+
+NotificationHomelyAlarm.prototype.allEvents = function() {
+    var self = this;
+    
+    _.each(self.events,function() {
+        
+    });
+};
+
 NotificationHomelyAlarm.prototype.onNotificationHandler = function (notification) {
     var self = this;
     
     /* warning,error,info,notification */
     
     // SecurityZone.warning
+    // Rain.warning
+    //
     
     /*
             id: Math.floor(now.getTime() /1000),
