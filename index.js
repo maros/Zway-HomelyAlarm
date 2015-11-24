@@ -25,17 +25,16 @@ _module = NotificationHomelyAlarm;
 
 NotificationHomelyAlarm.prototype.init = function (config) {
     NotificationHomelyAlarm.super_.prototype.init.call(this, config);
-
-    this.handler = this.onNotificationHandler();
     
-    this.secret = config.secret.toString();
-    this.server = config.server.toString();
-
+    var self = this;
+    
+    this.handler = _bind(self.onNotificationHandler,self);
+    
     this.controller.on('notifications.push', this.handler);
 };
 
 NotificationHomelyAlarm.prototype.stop = function () {
-    NotificationSMSru.super_.prototype.stop.call(this);
+    NotificationHomelyAlarm.super_.prototype.stop.call(this);
 
     this.controller.off('notifications.push', this.handler);
 };
@@ -44,9 +43,24 @@ NotificationHomelyAlarm.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-NotificationHomelyAlarm.prototype.onNotificationHandler = function () {
+NotificationHomelyAlarm.prototype.onNotificationHandler = function (notification) {
     var self = this;
     
+    /* warning,error,info,notification */
+    
+    // SecurityZone.warning
+    
+    /*
+            id: Math.floor(now.getTime() /1000),
+            timestamp: now.toISOString(),
+            level: severity,
+            message: message, 
+            type: type || 'device',
+            source: source,
+            redeemed: false,
+            // add unified hash - produces with source, cause timestamp in sec is not unique ...
+            h: this.hashCode(source)
+     */
     self.remoteCall('event');
 
 //local url           = ALARM.SERVER.."/alarm/"..action.."?"
@@ -78,18 +92,6 @@ NotificationHomelyAlarm.prototype.onNotificationHandler = function () {
 //        luup.log("[MyHome] Failed remote alarm with status "..code.." (".. respbody.." "..url..")",1)
 //    end
 //    
-    
-    return function(notice) {
-        http.request({
-            method: 'POST',
-            url: th,
-            data: {
-                api_id: self.api_key,
-                to: self.phone,
-                text: self.prefix + " " + notice.message
-            }
-        });
-    }
 }
 
 NotificationHomelyAlarm.prototype.remoteCall = function(action,params) {
