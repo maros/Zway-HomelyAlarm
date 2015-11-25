@@ -1,67 +1,68 @@
-/*** NotificationHomelyAlarm Z-Way HA module *******************************************
+/*** HomelyAlarm Z-Way HA module *******************************************
 
 Version: 1.0.0
 (c) Maroš Kollár, 2015
 -----------------------------------------------------------------------------
 Author: Maroš Kollár <maros@k-1.com>
 Description:
-    This module allows to send alarm notifications via NotificationHomelyAlarm
-    server https://github.com/maros/NotificationHomelyAlarm
+    This module allows to send alarm notifications via HomelyAlarm
+    server https://github.com/maros/HomelyAlarm
 
 ******************************************************************************/
 
-function NotificationHomelyAlarm (id, controller) {
+function HomelyAlarm (id, controller) {
     // Call superconstructor first (AutomationModule)
-    NotificationHomelyAlarm.super_.call(this, id, controller);
+    HomelyAlarm.super_.call(this, id, controller);
+    
+    self.eventHandlers = {};
 }
 
-inherits(NotificationHomelyAlarm, AutomationModule);
+inherits(HomelyAlarm, AutomationModule);
 
-_module = NotificationHomelyAlarm;
+_module = HomelyAlarm;
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-NotificationHomelyAlarm.prototype.init = function (config) {
-    NotificationHomelyAlarm.super_.prototype.init.call(this, config);
+HomelyAlarm.prototype.init = function (config) {
+    HomelyAlarm.super_.prototype.init.call(this, config);
     
     var self = this;
     
-    this.handler = _bind(self.onNotificationHandler,self);
-    
-    this.controller.on('notifications.push', this.handler);
-    
-    _.each('')
+    self.eventHandlers = {};
+    _.each(self.config.events,function(element,index) {
+        var handler = _bind(self.handleEvent,self,element);
+        _.each(self.events,function(event){
+            self.controller.on(element.type+'.'+event,handler);
+        });
+        self.eventHandlers[index] = handler;
+    });
 };
 
-NotificationHomelyAlarm.prototype.stop = function () {
-    NotificationHomelyAlarm.super_.prototype.stop.call(this);
-
-    this.controller.off('notifications.push', this.handler);
+HomelyAlarm.prototype.stop = function () {
+    var self = this;
+    
+    _.each(self.config.events,function(element,index) {
+        var handler = self.eventHandlers[index];
+        _.each(self.events,function(event){
+            self.controller.on(element.type+'.'+event,handler);
+        });
+    });
+    self.eventHandlers = {};
+    
+    HomelyAlarm.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-NotificationHomelyAlarm.prototype.events = [
+HomelyAlarm.prototype.events = [
     "alarm", "delayed_alarm", "cancel", "warning"
 ];
 
-NotificationHomelyAlarm.prototype.types = [
-    "intrusion", "flood", "smoke", "gas", "heat", "cold", "tamper", "other", "rain"
-];
-
-NotificationHomelyAlarm.prototype.allEvents = function() {
-    var self = this;
-    
-    _.each(self.events,function() {
-        
-    });
-};
-
-NotificationHomelyAlarm.prototype.onNotificationHandler = function (notification) {
+HomelyAlarm.prototype.onNotificationHandler = function (notification) {
     var self = this;
     
     /* warning,error,info,notification */
@@ -102,7 +103,7 @@ NotificationHomelyAlarm.prototype.onNotificationHandler = function (notification
 //        url     = url,
 //        method  = "POST",
 //        headers = {
-//            ["X-NotificationHomelyAlarm-Signature"] = signature
+//            ["X-HomelyAlarm-Signature"] = signature
 //        },
 //        sink    = ltn12.sink.table(respbody)
 //    }
@@ -114,7 +115,7 @@ NotificationHomelyAlarm.prototype.onNotificationHandler = function (notification
 //    
 }
 
-NotificationHomelyAlarm.prototype.remoteCall = function(action,params) {
+HomelyAlarm.prototype.remoteCall = function(action,params) {
     var self = this;
     
     executeFile(config.libPath + "/sha.js");
@@ -148,7 +149,7 @@ NotificationHomelyAlarm.prototype.remoteCall = function(action,params) {
         url: url,
         data: query_string,
         headers: {
-            "X-NotificationHomelyAlarm-Signature": signature
+            "X-HomelyAlarm-Signature": signature
         },
         async: true,
         success: function(response) {},

@@ -9,7 +9,7 @@
     "homepage":"http://k-1.com",
     "icon":"icon_on.png",
     "maturity":"stable",
-    "moduleName":"NotificationHomelyAlarm",
+    "moduleName":"HomelyAlarm",
     "options":{
         "fields": {
             "server": {
@@ -91,7 +91,7 @@
         }   
     },
     "repository":{
-        "source":"https://github.com/maros/Zway-NotificationHomelyAlarm",
+        "source":"https://github.com/maros/Zway-HomelyAlarm",
         "type":"git"
     },
     "schema":{
@@ -142,15 +142,15 @@
                         "type": {
                             "required": true,
                             "enum" : [
-                              "intrusion",
-                              "flood",
-                              "smoke",
-                              "gas",
-                              "heat",
-                              "cold",
-                              "tamper",
-                              "other",
-                              "rain"
+                              "security.intrusion",
+                              "security.flood",
+                              "security.smoke",
+                              "security.gas",
+                              "security.heat",
+                              "security.cold",
+                              "security.tamper",
+                              "security.other",
+                              "security.rain"
                              ]
                         },
                           "severity": {

@@ -1,4 +1,4 @@
-# Zway-NotificationHomelyAlarm
+# Zway-HomelyAlarm
 
 TODO
 
@@ -16,12 +16,12 @@ TODO
 
 ```shell
 cd /opt/z-way-server/automation/modules
-git clone https://github.com/maros/Zway-NotificationHomelyAlarm.git NotificationHomelyAlarm --branch latest
+git clone https://github.com/maros/Zway-HomelyAlarm.git HomelyAlarm --branch latest
 ```
 
 To update or install a specific version
 ```shell
-cd /opt/z-way-server/automation/modules/NotificationHomelyAlarm
+cd /opt/z-way-server/automation/modules/HomelyAlarm
 git fetch --tags
 # For latest released version
 git checkout tags/latest
