@@ -14,7 +14,8 @@
         "fields": {
             "server": {
                 "label": "__server_label__",
-                "order": 1
+                "order": 1,
+                "type": "url"
             },
             "secret": {
                 "label": "__secret_label__",
@@ -119,7 +120,8 @@
                             "required": true
                         },
                         "telephone": {
-                            "pattern": "\\+[1-9][0-9]+"
+                            "pattern": "\\+[1-9][0-9]+",
+                            "format": "email"
                         },
                         "voice": {
                             "type" : "boolean"
