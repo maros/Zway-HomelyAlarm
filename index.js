@@ -118,7 +118,7 @@ HomelyAlarm.prototype.onNotificationHandler = function (notification) {
 HomelyAlarm.prototype.remoteCall = function(action,params) {
     var self = this;
     
-    executeFile(config.libPath + "/sha.js");
+    executeFile("modules/HomelyAlarm/sha1.js");
     
     // Build query_string
     params = params || {};
