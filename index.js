@@ -59,7 +59,7 @@ HomelyAlarm.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 HomelyAlarm.prototype.events = [
-    "alarm", "delayed_alarm", "cancel", "warning"
+    "alarm", "delayed_alarm", "delayed_cancel", "warning"
 ];
 
 HomelyAlarm.prototype.handleEvent = function (eventConfig,event) {
