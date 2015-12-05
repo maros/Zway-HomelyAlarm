@@ -14,7 +14,7 @@ function HomelyAlarm (id, controller) {
     // Call superconstructor first (AutomationModule)
     HomelyAlarm.super_.call(this, id, controller);
     
-    self.eventHandlers = {};
+    this.eventHandlers = {};
 }
 
 inherits(HomelyAlarm, AutomationModule);
@@ -32,7 +32,7 @@ HomelyAlarm.prototype.init = function (config) {
     
     self.eventHandlers = {};
     _.each(self.config.events,function(element,index) {
-        var handler = _bind(self.handleEvent,self,element);
+        var handler = _.bind(self.handleEvent,self,element);
         _.each(self.events,function(event){
             self.controller.on(element.type+'.'+event,handler);
         });
@@ -62,7 +62,7 @@ HomelyAlarm.prototype.events = [
     "alarm", "delayed_alarm", "cancel", "warning"
 ];
 
-HomelyAlarm.prototype.onNotificationHandler = function (notification) {
+HomelyAlarm.prototype.handleEvent = function (eventConfig,event) {
     var self = this;
     
     /* warning,error,info,notification */
@@ -113,7 +113,7 @@ HomelyAlarm.prototype.onNotificationHandler = function (notification) {
 //        luup.log("[MyHome] Failed remote alarm with status "..code.." (".. respbody.." "..url..")",1)
 //    end
 //    
-}
+};
 
 HomelyAlarm.prototype.remoteCall = function(action,params) {
     var self = this;
@@ -122,8 +122,8 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
     
     // Build query_string
     params = params || {};
-    params.time = (new Date).getTime();
-    var query_string = _.reduce(
+    params.time = (new Date()).getTime();
+    var queryString = _.reduce(
         params,
         function ( components, value, key ) {
           components.push( key + '=' + encodeURIComponent( value ) );
@@ -147,7 +147,7 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
     http.request({
         method: 'POST',
         url: url,
-        data: query_string,
+        data: queryString,
         headers: {
             "X-HomelyAlarm-Signature": signature
         },
@@ -155,5 +155,4 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
         success: function(response) {},
         error: function(response) {}
     });
-}
- 
+};
