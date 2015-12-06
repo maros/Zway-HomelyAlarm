@@ -140,14 +140,14 @@ HomelyAlarm.prototype.getRecipients = function(severity) {
         
         if (recipient.telephone) {
             if (recipient.voice) {
-                actions[3] = ['voice',recipient.telephone];
+                actions[3] = { type: 'voice', param: recipient.telephone };
             }
             if (recipient.sms) {
-                actions[2] = ['sms',recipient.telephone];
+                actions[2] = { type: 'sms', param: recipient.telephone };
             }
         }
         if (recipient.email) {
-            actions[1] = ['email',recipient.email];
+            actions[1] = { type: 'email', param: recipient.email };
         }
         
         for(var s = severity; s > 0; s--) {
