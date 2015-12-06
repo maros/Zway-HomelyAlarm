@@ -32,21 +32,22 @@ HomelyAlarm.prototype.init = function (config) {
     
     self.eventHandlers = {};
     _.each(self.config.events,function(element,index) {
-        var handler = _.bind(self.handleEvent,self,element);
-        _.each(self.events,function(event){
+        _.each(self.listenEvents,function(handlerName,event){
+            var handler = _.bind(self[handlerName],self,element);
             self.controller.on(element.type+'.'+event,handler);
+            self.eventHandlers[index+event] = handler;
         });
-        self.eventHandlers[index] = handler;
     });
+    
+    executeFile("modules/HomelyAlarm/sha1.js");
 };
 
 HomelyAlarm.prototype.stop = function () {
     var self = this;
     
     _.each(self.config.events,function(element,index) {
-        var handler = self.eventHandlers[index];
-        _.each(self.events,function(event){
-            self.controller.on(element.type+'.'+event,handler);
+        _.each(self.listenEvents,function(event,handlerName){
+            self.controller.odd(element.type+'.'+event,self.eventHandlers[index+event]);
         });
     });
     self.eventHandlers = {};
@@ -58,8 +59,18 @@ HomelyAlarm.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-HomelyAlarm.prototype.events = [
-    "alarm", "delayed_alarm", "delayed_cancel", "warning"
+HomelyAlarm.prototype.listenEvents = {
+    "alarm":            "handleAlarm",
+    "stop":             "handleStop",
+    "delayed_alarm":    "handleDelayedAlarm",
+    "delayed_cancel":   "handleDelayedCancel",
+    "warning":          "handleWarning"
+};
+
+HomelyAlarm.prototype.severityActions = [
+    "email",
+    "sms",
+    "voice"
 ];
 
 HomelyAlarm.prototype.handleEvent = function (eventConfig,event) {
