@@ -73,75 +73,109 @@ HomelyAlarm.prototype.severityActions = [
     "voice"
 ];
 
-HomelyAlarm.prototype.handleEvent = function (eventConfig,event) {
+HomelyAlarm.prototype.handleAlarm = function (eventConfig,event) {
     var self = this;
     
-    /* warning,error,info,notification */
-    
-    // SecurityZone.warning
-    // Rain.warning
-    //
-    
-    /*
-            id: Math.floor(now.getTime() /1000),
-            timestamp: now.toISOString(),
-            level: severity,
-            message: message, 
-            type: type || 'device',
-            source: source,
-            redeemed: false,
-            // add unified hash - produces with source, cause timestamp in sec is not unique ...
-            h: this.hashCode(source)
-     */
-    self.remoteCall('event');
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' alarm event. severity '+eventConfig.severity);
+    self.handleEvent('alarm',event,self.getRecipients(eventConfig.severity));
+};
 
-//local url           = ALARM.SERVER.."/alarm/"..action.."?"
-//    
-//    if params == nil then
-//        params = {}
-//    end
-//    params["time"]      = os.time()
-//    params["status"]    = luup.variable_get(SID.SELF,"Status", SELF)
-//    
-//    for key,value in pairs(params) do
-//        url = url.."&"..key.."="..string.url_encode(value)
-//    end
-//    local signature     = hmac_sha1(ALARM.SECRET,url)
-//    local respbody      = {}
-//    
-//    luup.log("[MyHome] Calling remote alarm "..action..":"..url..":"..signature)
-//    local result, code, headers = HTTP.request{
-//        url     = url,
-//        method  = "POST",
-//        headers = {
-//            ["X-HomelyAlarm-Signature"] = signature
-//        },
-//        sink    = ltn12.sink.table(respbody)
-//    }
-//    
-//    if code ~= 200 then
-//        respbody = table.concat(respbody)
-//        luup.log("[MyHome] Failed remote alarm with status "..code.." (".. respbody.." "..url..")",1)
-//    end
-//    
+HomelyAlarm.prototype.handleStop = function (eventConfig,event) {
+    var self = this;
+    
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' stop event. severity '+eventConfig.severity);
+    self.handleEvent('stop',event);
+};
+
+HomelyAlarm.prototype.handleDelayedAlarm = function (eventConfig,event) {
+    var self = this;
+    
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' delayed_alarm event. severity '+eventConfig.severity);
+    self.handleEvent('delayed',event,self.getRecipients(eventConfig.severity));
+};
+
+HomelyAlarm.prototype.handleDelayedCancel = function (eventConfig,event) {
+    var self = this;
+    
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' delayed_cancel event. severity '+eventConfig.severity);
+    self.handleEvent('cancel',event);
+};
+
+HomelyAlarm.prototype.handleWarning = function (eventConfig,event) {
+    var self = this;
+    
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' warning event.');
+    self.handleEvent('warning',event,self.getRecipients(1));
+};
+
+HomelyAlarm.prototype.handleEvent = function(action,event,recipients) {
+    var self = this;
+    
+    var params = { id: event.id };
+    _.each(['id','message','title','type'],function(key) {
+        if (typeof(event[key]) !== 'undefined') {
+            params[key] = event[key];
+        }
+    });
+    
+    if (typeof(recipients) !== 'undefined') {
+        params.recipients = recipients;
+    }
+
+    self.remoteCall(action,params);
+};
+
+HomelyAlarm.prototype.getRecipients = function(severity) {
+    var self = this;
+    
+    severity = parseInt(severity);
+    
+    var recipients = [];
+    _.each(self.config.recipients,function(recipient) {
+        var actions = [];
+        var recipientSeverity = parseInt(recipient.severity);
+        if (recipientSeverity > severity) {
+            return;
+        }
+        
+        if (recipient.telephone) {
+            if (recipient.voice) {
+                actions[3] = ['voice',recipient.telephone];
+            }
+            if (recipient.sms) {
+                actions[2] = ['sms',recipient.telephone];
+            }
+        }
+        if (recipient.email) {
+            actions[1] = ['email',recipient.email];
+        }
+        
+        for(var s = severity; s > 0; s--) {
+            if (typeof(actions[s]) !== 'undefined') {
+                recipients.push(actions[s]);
+                return;
+            }
+        }
+        
+        for(var i = 0; i <= severity; i++) {
+            if (typeof(actions[i]) !== 'undefined') {
+                recipients.push(actions[i]);
+                return;
+            }
+        }
+    });
+    
+    return recipients;
 };
 
 HomelyAlarm.prototype.remoteCall = function(action,params) {
     var self = this;
     
-    executeFile("modules/HomelyAlarm/sha1.js");
-    
     // Build query_string
     params = params || {};
+    params.action = action;
     params.time = (new Date()).getTime();
-    var queryString = _.reduce(
-        params,
-        function ( components, value, key ) {
-          components.push( key + '=' + encodeURIComponent( value ) );
-          return components;
-        },
-        []
-    ).join( '&' );
+    var queryString = JSON.stringify(params);
     
     // Build URL
     var url = this.server;
@@ -151,7 +185,7 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
     url = url + action;
     
     // Build signature
-    var sha = new jsSHA(url, "TEXT");
+    var sha = new jsSHA(queryString, "TEXT");
     var signature = sha.getHMAC(this.secret, "TEXT", "SHA-512", "HEX");
     
     // HTTP request
@@ -160,10 +194,13 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
         url: url,
         data: queryString,
         headers: {
+            "Content−Type": "application/json",
             "X-HomelyAlarm-Signature": signature
         },
         async: true,
         success: function(response) {},
-        error: function(response) {}
+        error: function(response) {
+            console.error('[HomelyAlarm] Could not call alarm server');
+        }
     });
 };
