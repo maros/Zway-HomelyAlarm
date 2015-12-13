@@ -77,14 +77,14 @@ HomelyAlarm.prototype.handleAlarm = function (eventConfig,event) {
     var self = this;
     
     console.log('[HomelyAlarm] Got '+eventConfig.type+' alarm event. severity '+eventConfig.severity);
-    self.handleEvent('alarm',event,self.getRecipients(eventConfig.severity));
+    self.handleEvent('start',event,self.getRecipients(eventConfig.severity));
 };
 
 HomelyAlarm.prototype.handleStop = function (eventConfig,event) {
     var self = this;
     
     console.log('[HomelyAlarm] Got '+eventConfig.type+' stop event. severity '+eventConfig.severity);
-    self.handleEvent('stop',event);
+    //self.handleEvent('stop',event);
 };
 
 HomelyAlarm.prototype.handleDelayedAlarm = function (eventConfig,event) {
@@ -112,7 +112,7 @@ HomelyAlarm.prototype.handleEvent = function(action,event,recipients) {
     var self = this;
     
     var params = { id: event.id };
-    _.each(['id','message','title','type'],function(key) {
+    _.each(['id','message','title','type','delay'],function(key) {
         if (typeof(event[key]) !== 'undefined') {
             params[key] = event[key];
         }
@@ -131,35 +131,40 @@ HomelyAlarm.prototype.getRecipients = function(severity) {
     severity = parseInt(severity);
     
     var recipients = [];
-    _.each(self.config.recipients,function(recipient) {
-        var actions = [];
-        var recipientSeverity = parseInt(recipient.severity);
+    _.each(self.config.recipients,function(element) {
+        var recipientSeverity = parseInt(element.severity);
         if (recipientSeverity > severity) {
             return;
         }
         
-        if (recipient.telephone) {
-            if (recipient.voice) {
-                actions[3] = { type: 'voice', param: recipient.telephone };
+        var recipient = { severity: severity };
+        if (element.telephone) {
+            if (element.voice) {
+                recipient.voice = element.telephone;
             }
-            if (recipient.sms) {
-                actions[2] = { type: 'sms', param: recipient.telephone };
+            if (element.sms) {
+                recipient.sms = element.telephone;
             }
         }
-        if (recipient.email) {
-            actions[1] = { type: 'email', param: recipient.email };
+        if (element.email) {
+            recipient.email = element.email;
         }
         
-        for(var s = severity; s > 0; s--) {
-            if (typeof(actions[s]) !== 'undefined') {
-                recipients.push(actions[s]);
+        recipients.push(recipient);
+        
+        var severityAction;
+        for(var s = severity-1; s >= 0; s--) {
+            severityAction = self.severityActions[s];
+            if (typeof(recipient[severityAction]) !== 'undefined') {
+                recipient.prefered = severityAction;
                 return;
             }
         }
         
-        for(var i = 0; i <= severity; i++) {
-            if (typeof(actions[i]) !== 'undefined') {
-                recipients.push(actions[i]);
+        for(var i = 0; i < severity; i++) {
+            severityAction = self.severityActions[i];
+            if (typeof(recipient[severityAction]) !== 'undefined') {
+                recipient.prefered = severityAction;
                 return;
             }
         }
@@ -182,7 +187,7 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
     if (!url.match(/\/$/)) {
         url = url + '/';
     }
-    url = url + action;
+    url = url + 'alarm/' + action;
     
     // Build signature
     var sha = new jsSHA(queryString, "TEXT");
