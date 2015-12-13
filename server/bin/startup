@@ -1,0 +1,4 @@
+#!/bin/bash
+export HOME=/home/alarm
+eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)"
+bin/homely_alarm run --config alarm.yml
