@@ -67,9 +67,8 @@ package App::HomelyAlarm {
     
     has 'timer' => (
         is              => 'rw',
-        predicate       => 'has_timer',
-        clearer         => 'clear_timer',
-        isa             => 'Ref',
+        isa             => 'HashRef',
+        default         => sub { retun {} },
     );
 
     has 'self_url' => (
@@ -162,37 +161,46 @@ package App::HomelyAlarm {
     sub dispatch_POST_alarm_delayed {
         my ($self,$req) = @_;
         
-#        unless ($self->has_timer) {
-#            my $message = $req->param('message');
-#            my $severity = $req->param('severity') || "high";
-#            
-#            $self->timer(AnyEvent->timer( 
-#                after   => $req->param('timer') || 60, 
-#                cb      => sub { 
-#                    $self->run_notify($message,$severity) 
-#                }
-#            ));
-#        }
-            
+        my $data = _body_data($req);
+        
+        _log("Start %s alarm timer",$data->{type});
+        my $timer = $data->{type};
+        unless (defined $self->timer->{$timer}) {
+            $self->timer->{$timer} = AnyEvent->timer( 
+                after   => $data->{'delay'} || 60, 
+                cb      => sub { 
+                    delete $self->timer->{$timer};
+                    $self->run_notify($data);
+                }
+            );
+        }
+        
         return _reply_ok();
     }
     
     sub dispatch_POST_alarm_cancel {
         my ($self,$req) = @_;
         
-        _log("Reset alarm intrusion timer");
+        my $data = _body_data($req);
         
-#        $self->clear_timer();
+        _log("Cancel %s alarm timer",$data->{type});
+        
+        my $timer = $data->{type};
+        if (defined ) {
+            delete $self->timer->{$timer};
+        }
+        
         return _reply_ok();
     }
     
     sub dispatch_POST_alarm_start {
         my ($self,$req) = @_;
         
-#        my $message = $req->param('message');
-#        my $severity = $req->param('severity') || "high";
-#        _log("Run immediate alarm: $message");
-#        $self->run_notify($message,$severity);
+        my $data = _body_data($req);
+        
+        _log("Immediate %s alarm",$data->{type});
+        
+        $self->run_notify($data);
         
         return _reply_ok();
     }
@@ -200,17 +208,11 @@ package App::HomelyAlarm {
     sub dispatch_POST_alarm_warning {
         my ($self,$req) = @_;
         
-#        my $message = $req->param('message');
-#        my $severity = $req->param('severity') || "medium";
-#        my $type = $req->param('type') || "unknown";
-#        
-#        my $new_event = App::HomelyAlarm::EventLog->new(
-#            message     => $message,
-#            severity    => $severity,
-#            type        => $type,
-#        );
-#        
-#        $new_event->store($self->storage);
+        my $data = _body_data($req);
+        
+        _log("%s messge",$data->{type});
+        
+        $self->run_notify($data);
         
         return _reply_ok();
     }
@@ -561,5 +563,7 @@ App::HomelyAlarm::Command::Run - Run the HomelyAlarm Server
 
 =cut
 }
+
+App::HomelyAlarm::TimerManager {}
 
 1;
