@@ -39,7 +39,7 @@ package App::HomelyAlarm::Message {
             (
                 map { $_ => $params{$_} }
                 grep { defined $params{$_} }
-                qw(email voice sms)
+                qw(email call sms)
             ),
             message     => $self,
         );

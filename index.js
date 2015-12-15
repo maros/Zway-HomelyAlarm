@@ -70,7 +70,7 @@ HomelyAlarm.prototype.listenEvents = {
 HomelyAlarm.prototype.severityActions = [
     "email",
     "sms",
-    "voice"
+    "call"
 ];
 
 HomelyAlarm.prototype.handleAlarm = function (eventConfig,event) {
@@ -139,8 +139,8 @@ HomelyAlarm.prototype.getRecipients = function(severity) {
         
         var recipient = { severity: severity };
         if (element.telephone) {
-            if (element.voice) {
-                recipient.voice = element.telephone;
+            if (element.call) {
+                recipient.call = element.telephone;
             }
             if (element.sms) {
                 recipient.sms = element.telephone;

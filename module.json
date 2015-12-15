@@ -40,9 +40,9 @@
                             "order": 3,
                             "label": "__telephone_label__"
                         },
-                        "voice": {
+                        "call": {
                             "order": 4,
-                            "label": "__voice_label__"
+                            "label": "__call_label__"
                         },
                         "sms": {
                             "order": 5,

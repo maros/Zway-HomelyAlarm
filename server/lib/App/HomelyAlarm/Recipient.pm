@@ -18,10 +18,10 @@ package App::HomelyAlarm::Recipient {
         predicate       => 'has_email'
     );
     
-    has 'voice' => (
+    has 'call' => (
         is              => 'rw',
         isa             => 'Str',
-        predicate       => 'has_voice'
+        predicate       => 'has_call'
     );
     
     has 'sms' => (
@@ -30,10 +30,10 @@ package App::HomelyAlarm::Recipient {
         predicate       => 'has_sms'
     );
     
-    has 'voice_sid' => (
+    has 'call_sid' => (
         is              => 'rw',
         isa             => 'Str',
-        predicate       => 'has_voice_sid'
+        predicate       => 'has_call_sid'
     );
     
     has 'sms_sid' => (
@@ -51,10 +51,10 @@ package App::HomelyAlarm::Recipient {
     sub process {
         my ($self) = @_;
         
-        if ($self->has_voice && ! $self->has_voice_sid) {
-            $self->process_voice();
+        if ($self->has_call && ! $self->has_call_sid) {
+            $self->process_call();
         } elsif ($self->has_sms && ! $self->has_sms_sid) {
-            $self->process_voice();
+            $self->process_sms();
         } elsif ($self->has_email() && ! $self->has_email_message_id) {
             $self->process_email();
         }
@@ -115,7 +115,7 @@ package App::HomelyAlarm::Recipient {
             Timeout         => 60,
             sub {
                 my ($data,$headers) = @_;
-                $self->voice_sid($data->{sid});
+                $self->call_sid($data->{sid});
             },
         );
     }
