@@ -232,29 +232,28 @@ package App::HomelyAlarm {
         my $sid;
         
         if ($sid = $req->param('CallSid')) {
-            my $message = App::HomelyAlarm::MessageLog->find_message($self->storage,$sid);
+            my $recipient = $self->find_recipient( call_sid => $sid);
             return _reply_error(404,"Call not found",$req)
-                unless $message;
+                unless $recipient;
             
             
-            _log("Transaction status ".$message->recipient->telephone.": ".$req->param('CallStatus'));
+            _log("Transaction status ".$recipient->call.": ".$req->param('CallStatus'));
             if ($req->param('CallStatus') ne 'completed') {
                 # send fallback SMS
-                $message->set_failed($self->storage);
-                $self->run_sms($message->recipient,$message->message,$message->severity);
+                $recipient->set_failed();
             } else {
-                $message->set_success($self->storage);
+                $recipient->set_success();
             }
         } elsif ($sid = $req->param('SmsSid')) {
-            my $message = App::HomelyAlarm::MessageLog->find_message($self->storage,$sid);
+            my $recipient = $self->find_recipient( sms_sid => $sid);
             return _reply_error(404,"SMS not found",$req)
-                unless $message;
+                unless $recipient;
             
-            _log("SMS status ".$message->recipient->telephone.": ".$req->param('SmsStatus'));
+            _log("SMS status ".$recipient->sms.": ".$req->param('SmsStatus'));
             if ($req->param('SmsStatus') ne 'completed') {
-                $message->set_failed($self->storage);
+                $recipient->set_failed();
             } else {
-                $message->set_success($self->storage);
+                $recipient->set_success();
             }
         } else {
             return _reply_error(404,"Missing parameters",$req);
@@ -266,7 +265,7 @@ package App::HomelyAlarm {
     sub dispatch_GET_twilio_twiml {
         my ($self,$req) = @_;
         
-        my $call = App::HomelyAlarm::MessageLog->find_message($self->storage,$req->param('CallSid'));
+        my $call = $self->find_message( call_sid => $req->param('CallSid'));
         return _reply_error(404,"Call not found",$req)
             unless $call;
         
@@ -367,6 +366,11 @@ TWIML
         # TODO store $message somewhere
         
         return $message;
+    }
+    
+    sub find_recipient {
+        
+        # TODO
     }
     
     sub authenticate_alarm {
