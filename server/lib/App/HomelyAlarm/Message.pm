@@ -20,5 +20,15 @@ package App::HomelyAlarm::Message {
         is              => 'rw',
         isa             => 'ArrayRef[App::HomelyAlarm::Recipients]',
         required        => 1
+        #traits          => ['Array'],
+        #handles          => {
+        #    'add_recipient' => 'push'
+        #},
+    );
+    
+    has 'type' => (
+        is              => 'rw',
+        isa             => 'Str',
+        required        => 1
     );
 }

@@ -1,9 +1,14 @@
 package App::HomelyAlarm {
     use 5.016;
     
+    use App::HomelyAlarm::Message;
+    use App::HomelyAlarm::Recipient;
+    
     use MooseX::App::Simple qw(Config);
     
     no if $] >= 5.018000, warnings => qw(experimental::smartmatch);
+    
+    our $INSTANCE;
     
     use AnyEvent::HTTP;
     use Twiggy::Server;
@@ -68,6 +73,11 @@ package App::HomelyAlarm {
     has 'timer' => (
         is              => 'rw',
         isa             => 'HashRef',
+        traits          => ['Hash'],
+        handles         => {
+            has_timer       => 'defined',
+            clear_timer     => 'delete',
+        },
         default         => sub { retun {} },
     );
 
@@ -76,8 +86,17 @@ package App::HomelyAlarm {
         predicate       => 'has_self_url',
     );
     
+    sub instance {
+        return $INSTANCE;
+    }
+    
     sub run {
         my ($self) = @_;
+        
+        die("Only one instance of __PACKAGE__ allowed")
+            if defined $INSTANCE;
+        
+        $INSTANCE = $self;
  
         # Initalize condvar
         my $cv = AnyEvent->condvar;
@@ -112,6 +131,8 @@ package App::HomelyAlarm {
         $cv->recv;
         
         _log('End loop');
+        
+        $INSTANCE = undef;
     }
     
     sub app {
@@ -163,16 +184,8 @@ package App::HomelyAlarm {
         
         my $data = _body_data($req);
         
-        _log("Start %s alarm timer",$data->{type});
-        my $timer = $data->{type};
-        unless (defined $self->timer->{$timer}) {
-            $self->timer->{$timer} = AnyEvent->timer( 
-                after   => $data->{'delay'} || 60, 
-                cb      => sub { 
-                    delete $self->timer->{$timer};
-                    $self->run_notify($data);
-                }
-            );
+        unless ($self->has_timer($data->{type})) {
+            $self->add_timer($data->{type},$data->{delay},$data);
         }
         
         return _reply_ok();
@@ -185,11 +198,7 @@ package App::HomelyAlarm {
         
         _log("Cancel %s alarm timer",$data->{type});
         
-        my $timer = $data->{type};
-        if (defined ) {
-            delete $self->timer->{$timer};
-        }
-        
+        $self->clear_timer($data->{type});
         return _reply_ok();
     }
     
@@ -216,7 +225,6 @@ package App::HomelyAlarm {
         
         return _reply_ok();
     }
-    
     
     sub dispatch_POST_twilio_status {
         my ($self,$req) = @_;
@@ -430,47 +438,49 @@ TWIML
     }
 
     sub run_notify {
-        my ($self,$message,$severity) = @_;
-        $self->clear_timer();
-        _log("Running $severity priority alarm: $message");
+        my ($self,$payload) = @_;
         
-        $severity //= 'medium';
         
-        my $severity_level = App::HomelyAlarm::Utils::severity_level($severity);
         
-        RECIPIENT:
-        foreach my $recipient (App::HomelyAlarm::Recipient->list($self->storage)) {
-            my $recipient_severity_level = $recipient->severity_level;
-            if (defined $recipient_severity_level
-                && $recipient_severity_level > $severity_level) {
-                _log("Skip ".$recipient->stringify(1).": Severity ".$recipient->severity);
-                next;
-            };
-            
-            my $last_message = $recipient->last_message($self->storage);
-            
-            if (defined $last_message
-                && $last_message->message eq $message
-                && $last_message->ago < 60*10
-                && $last_message->status ~~ [qw(1 0)]) {
-                _log("Skip ".$recipient->stringify(1).": Duplicate message");
-                next;
-            }
-            
-            _log("Notifying ".$recipient->stringify(1));
-            
-            given ($severity) {
-                when ('low') {
-                    $self->run_email($recipient,$message,$severity);
-                }
-                when ('medium') {
-                    $self->run_sms($recipient,$message,$severity);
-                }
-                when ('high') {
-                    $self->run_call($recipient,$message,$severity);
-                }
-            }
-        }
+#        _log("Running $severity priority alarm: $message");
+#        
+#        $severity //= 'medium';
+#        
+#        my $severity_level = App::HomelyAlarm::Utils::severity_level($severity);
+#        
+#        RECIPIENT:
+#        foreach my $recipient (App::HomelyAlarm::Recipient->list($self->storage)) {
+#            my $recipient_severity_level = $recipient->severity_level;
+#            if (defined $recipient_severity_level
+#                && $recipient_severity_level > $severity_level) {
+#                _log("Skip ".$recipient->stringify(1).": Severity ".$recipient->severity);
+#                next;
+#            };
+#            
+#            my $last_message = $recipient->last_message($self->storage);
+#            
+#            if (defined $last_message
+#                && $last_message->message eq $message
+#                && $last_message->ago < 60*10
+#                && $last_message->status ~~ [qw(1 0)]) {
+#                _log("Skip ".$recipient->stringify(1).": Duplicate message");
+#                next;
+#            }
+#            
+#            _log("Notifying ".$recipient->stringify(1));
+#            
+#            given ($severity) {
+#                when ('low') {
+#                    $self->run_email($recipient,$message,$severity);
+#                }
+#                when ('medium') {
+#                    $self->run_sms($recipient,$message,$severity);
+#                }
+#                when ('high') {
+#                    $self->run_call($recipient,$message,$severity);
+#                }
+#            }
+#        }
     }
     
     sub authenticate_alarm {
@@ -516,6 +526,26 @@ TWIML
         }
         
         return 1;
+    }
+    
+    sub has_timer {
+        my ($self,$id,$data) = @_;
+        
+        my $timer = $data->{type};
+        return defined $self->timer->{$timer};
+    }
+    
+    sub add_timer {
+        my ($self,$id,$delay,$data) = @_;
+        
+        log("Start %s alarm timer",$id);
+        $self->timer->{$id} = AnyEvent->timer( 
+            after   => $delay || 60, 
+            cb      => sub { 
+                $self->clear_timer($id)
+                $self->run_notify($data);
+            }
+        );
     }
     
     sub _log {

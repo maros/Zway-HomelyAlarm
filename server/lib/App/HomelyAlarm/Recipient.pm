@@ -20,4 +20,16 @@ package App::HomelyAlarm::Recipient {
         isa             => 'Str',
         predicate       => 'has_sms'
     );
+    
+    has 'voice_sid' => (
+        is              => 'rw',
+        isa             => 'Str',
+        predicate       => 'has_voice_sid'
+    );
+    
+    has 'sms_sid' => (
+        is              => 'rw',
+        isa             => 'Str',
+        predicate       => 'has_sms_sid'
+    );
 }
