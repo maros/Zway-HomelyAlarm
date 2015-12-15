@@ -309,6 +309,9 @@ TWIML
         
         my $content = '';
         my @args;
+        $args{From} ||= $self->caller_number;
+        $args{StatusCallback} ||= $self->self_url.'/twilio/status';
+        $args{StatusMethod} ||= 'POST';
         
         for my $key ( keys %args ) {
             $args{$key} = ( defined $args{$key} ? $args{$key} : '' );
@@ -345,142 +348,25 @@ TWIML
         );
     }
     
-    sub run_email {
-        my ($self,$recipient,$message,$severity) = @_;
-        
-        unless ($recipient->has_email) {
-            $self->run_sms($recipient,$message,$severity)
-                if $recipient->has_telephone;
-            return;
-        }
-        
-        $recipient->add_message($self->storage,
-            message     => $message,
-            mode        => 'email',
-            severity    => $severity,
-            reference   => 'TODO msgid',
-        );
-        
-        Email::Stuffer
-            ->from($self->sender_email)
-            ->to($recipient->email)
-            ->subject('HomelyAlarmAlert:'.$message)
-            ->text_body(qq[
-                Message:  $message
-                Severity: $severity
-                --
-                Sent by HomelyAlarm
-            ])
-            ->send();
-    }
-    
-    sub run_sms {
-        my ($self,$recipient,$message,$severity) = @_;
-        
-        unless ($recipient->has_telephone) {
-            $self->run_email($recipient,$message,$severity)
-                if $recipient->has_email;
-            return;
-        }
-                
-        $self->run_twilio(
-            'POST',
-            'Messages',
-            From            => $self->caller_number,
-            To              => $recipient->telephone,
-            Body            => $message,
-            StatusCallback  => $self->self_url.'/twilio/status',
-            StatusMethod    => 'POST',
-            sub {
-                my ($data,$headers) = @_;
-                $recipient->add_message(
-                    $self->storage,
-                    message     => $message,
-                    mode        => 'sms',
-                    severity    => $severity,
-                    reference   => $data->{sid},
-                );
-            },
-        )
-    }
-    
-    sub run_call {
-        my ($self,$recipient,$message,$severity) = @_;
-        
-        unless ($recipient->has_telephone) {
-            $self->run_email($recipient,$message,$severity)
-                if $recipient->has_email;
-            return;
-        }
-        
-        $self->run_twilio(
-            'POST',
-            'Calls',
-            From            => $self->caller_number,
-            To              => $recipient->telephone,
-            Url             => $self->self_url.'/twilio/twiml',
-            Method          => 'GET',
-            StatusCallback  => $self->self_url.'/twilio/status',
-            StatusMethod    => 'POST',
-            Record          => 'false',
-            Timeout         => 60,
-            sub {
-                my ($data,$headers) = @_;
-                $recipient->add_message(
-                    $self->storage,
-                    message     => $message,
-                    mode        => 'call',
-                    severity    => $severity,
-                    reference   => $data->{sid},
-                );
-            },
-        );
-    }
-
     sub run_notify {
         my ($self,$payload) = @_;
         
+        my $message = App::HomelyAlarm::Message->new(
+            (
+                map { $_ => $payload->{$_} }
+                grep { defined  $payload->{$_} }
+                qw(message title type)
+            )
+        );
         
+        foreach my $recipient (@{$payload->{recipients}}) {
+            $message->add_recipient($recipient);
+        }
         
-#        _log("Running $severity priority alarm: $message");
-#        
-#        $severity //= 'medium';
-#        
-#        my $severity_level = App::HomelyAlarm::Utils::severity_level($severity);
-#        
-#        RECIPIENT:
-#        foreach my $recipient (App::HomelyAlarm::Recipient->list($self->storage)) {
-#            my $recipient_severity_level = $recipient->severity_level;
-#            if (defined $recipient_severity_level
-#                && $recipient_severity_level > $severity_level) {
-#                _log("Skip ".$recipient->stringify(1).": Severity ".$recipient->severity);
-#                next;
-#            };
-#            
-#            my $last_message = $recipient->last_message($self->storage);
-#            
-#            if (defined $last_message
-#                && $last_message->message eq $message
-#                && $last_message->ago < 60*10
-#                && $last_message->status ~~ [qw(1 0)]) {
-#                _log("Skip ".$recipient->stringify(1).": Duplicate message");
-#                next;
-#            }
-#            
-#            _log("Notifying ".$recipient->stringify(1));
-#            
-#            given ($severity) {
-#                when ('low') {
-#                    $self->run_email($recipient,$message,$severity);
-#                }
-#                when ('medium') {
-#                    $self->run_sms($recipient,$message,$severity);
-#                }
-#                when ('high') {
-#                    $self->run_call($recipient,$message,$severity);
-#                }
-#            }
-#        }
+        $message->process();
+        # TODO store $message somewhere
+        
+        return $message;
     }
     
     sub authenticate_alarm {
