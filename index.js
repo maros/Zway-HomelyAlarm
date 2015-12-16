@@ -185,15 +185,19 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
     var queryString = JSON.stringify(params);
     
     // Build URL
-    var url = this.server;
+    var url = self.config.server;
     if (!url.match(/\/$/)) {
         url = url + '/';
     }
     url = url + 'alarm/' + action;
     
+    console.log('[HomelyAlarm] Remote request to '+url+' with '+queryString);
+    
     // Build signature
-    var sha = new jsSHA(queryString, "TEXT");
-    var signature = sha.getHMAC(this.secret, "TEXT", "SHA-512", "HEX");
+    var sha = new jsSHA("SHA-1", "TEXT");
+    sha.setHMACKey(self.config.secret, "TEXT");
+    sha.update(queryString);
+    var signature = sha.getHMAC("HEX");
     
     // HTTP request
     http.request({
