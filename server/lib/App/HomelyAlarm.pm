@@ -472,7 +472,7 @@ TWIML
         my ($req) = @_;
         
         if (($req->method eq 'POST' || $req->method eq 'PUT') 
-            && $req->header('Content-Type') eq 'application/json') {
+            && $req->header('content-type') eq 'application/json') {
             return JSON::XS::decode_json($req->content)
         }
         return;

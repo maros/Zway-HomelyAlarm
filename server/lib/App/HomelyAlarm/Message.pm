@@ -24,7 +24,7 @@ package App::HomelyAlarm::Message {
     
     has 'recipients' => (
         is              => 'ro',
-        isa             => 'ArrayRef[App::HomelyAlarm::Recipients]',
+        isa             => 'ArrayRef[App::HomelyAlarm::Recipient]',
         required        => 1,
         default         => sub { [] },
         traits          => ['Array'],
@@ -41,12 +41,12 @@ package App::HomelyAlarm::Message {
     );
     
     sub add_recipient {
-        my ($self,%params) = @_;
+        my ($self,$params) = @_;
         
-        my $recipient = App::HomelyAlarm::Recipients->new(
+        my $recipient = App::HomelyAlarm::Recipient->new(
             (
-                map { $_ => $params{$_} }
-                grep { defined $params{$_} }
+                map { $_ => $params->{$_} }
+                grep { defined $params->{$_} }
                 qw(email call sms)
             ),
             message     => $self,
