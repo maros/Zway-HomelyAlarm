@@ -19,7 +19,6 @@ package App::HomelyAlarm {
     use Digest::HMAC_SHA1 qw(hmac_sha1_hex hmac_sha1);
     use MIME::Base64 qw(encode_base64);
     use URI::Escape qw(uri_escape);
-    use Email::Stuffer;
     
     option 'port' => (
         is              => 'rw',
