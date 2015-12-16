@@ -56,13 +56,13 @@ package App::HomelyAlarm::Recipient {
     
     sub set_success {
         my ($self) = @_;
-        Homely::Alarm::_log('Mark recipient as successful');
+        App::HomelyAlarm::_log('Mark recipient as successful');
         $self->status('success');
     }
     
     sub set_fail {
         my ($self) = @_;
-        Homely::Alarm::_log('Mark recipient as failed. Retry if possible');
+        App::App::HomelyAlarm::_log('Mark recipient as failed. Retry if possible');
         $self->status('fail');
         $self->process;
     }
@@ -73,7 +73,7 @@ package App::HomelyAlarm::Recipient {
         return
             if $self->status eq 'success';
         
-        Homely::Alarm::_log('Processing recipient');
+        App::HomelyAlarm::_log('Processing recipient');
         
         if ($self->has_call && ! $self->has_call_sid) {
             $self->process_call();
@@ -92,7 +92,7 @@ package App::HomelyAlarm::Recipient {
         my $type    = $self->message->type;
         my $title   = $self->message->title;
         
-        Homely::Alarm::_log('Send email to %s',$self->email);
+        App::HomelyAlarm::_log('Send email to %s',$self->email);
         
         # TODO message id
         my $result = Email::Stuffer
@@ -120,7 +120,7 @@ package App::HomelyAlarm::Recipient {
         my $app     = App::HomelyAlarm->instance;
         my $message = $self->message->message;
         
-        Homely::Alarm::_log('Send SMS to %s',$self->sms);
+        App::HomelyAlarm::_log('Send SMS to %s',$self->sms);
         
         $app->run_twilio(
             'POST',
@@ -129,21 +129,21 @@ package App::HomelyAlarm::Recipient {
             Body            => $message,
             sub {
                 my ($data,$headers) = @_;
-                Homely::Alarm::_log($data);
+                App::HomelyAlarm::_log($data);
                 $self->sms_sid($data->{sid});
             },
         );
     }
     
-    sub run_call {
+    sub process_call {
         my ($self) = @_;
         
         my $app     = App::HomelyAlarm->instance;
         my $message = $self->message->message;
         
-        Homely::Alarm::_log('Call %s',$self->call);
+        App::HomelyAlarm::_log('Call %s',$self->call);
         
-        $self->run_twilio(
+        $app->run_twilio(
             'POST',
             'Calls',
             To              => $self->call,
@@ -153,7 +153,7 @@ package App::HomelyAlarm::Recipient {
             Timeout         => 60,
             sub {
                 my ($data,$headers) = @_;
-                Homely::Alarm::_log($data);
+                App::HomelyAlarm::_log($data);
                 $self->call_sid($data->{sid});
             },
         );

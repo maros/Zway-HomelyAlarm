@@ -384,7 +384,7 @@ TWIML
         my ($self,%params) = @_;
         
         foreach my $message ($self->all_messages) {
-            RECIPIENT:foreach my $recipient ($self->all_recipients) {
+            RECIPIENT:foreach my $recipient ($message->all_recipients) {
                 foreach my $key (keys %params) {
                     next RECIPIENT
                         unless ($recipient->$key eq $params{$key});
@@ -454,7 +454,10 @@ TWIML
     
     sub _log {
         my ($message,@params) = @_;
-        say STDERR "[LOG] ".sprintf($message,@params);
+        if (scalar @params) {
+            $message = sprintf($message,@params);
+        }
+        say STDERR "[LOG] ".$message;
     }
     
     sub _reply_ok {
