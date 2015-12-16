@@ -46,7 +46,7 @@ HomelyAlarm.prototype.stop = function () {
     var self = this;
     
     _.each(self.config.events,function(element,index) {
-        _.each(self.listenEvents,function(event,handlerName){
+        _.each(self.listenEvents,function(handlerName,event){
             self.controller.off(element.type+'.'+event,self.eventHandlers[index+event]);
         });
     });
