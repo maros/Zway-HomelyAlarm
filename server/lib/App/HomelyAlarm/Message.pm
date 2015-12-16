@@ -16,14 +16,15 @@ package App::HomelyAlarm::Message {
     );
     
     has 'recipients' => (
-        is              => 'rw',
+        is              => 'ro',
         isa             => 'ArrayRef[App::HomelyAlarm::Recipients]',
         required        => 1,
         default         => sub { [] },
-        #traits          => ['Array'],
-        #handles          => {
-        #    'add_recipient' => 'push'
-        #},
+        traits          => ['Array'],
+        handles         => {
+            push_recipient   => 'push',
+            all_recipients  => 'elements',
+        },
     );
     
     has 'type' => (
@@ -43,7 +44,7 @@ package App::HomelyAlarm::Message {
             ),
             message     => $self,
         );
-        push (@{$self->recipients},$recipient);
+        $self->push_recipient($recipient);
         return $recipient;
     }
     
@@ -54,3 +55,5 @@ package App::HomelyAlarm::Message {
         }
     }
 }
+
+1;

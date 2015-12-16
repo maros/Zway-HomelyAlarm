@@ -120,3 +120,5 @@ package App::HomelyAlarm::Recipient {
         );
     }
 }
+
+1;

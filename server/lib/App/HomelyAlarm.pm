@@ -71,14 +71,25 @@ package App::HomelyAlarm {
     );
     
     has 'timer' => (
-        is              => 'rw',
+        is              => 'ro',
         isa             => 'HashRef',
         traits          => ['Hash'],
         handles         => {
             has_timer       => 'defined',
             clear_timer     => 'delete',
         },
-        default         => sub { retun {} },
+        default         => sub { return {} },
+    );
+    
+     has 'messages' => (
+        is              => 'ro',
+        isa             => 'ArrayRef[App::HomelyAlarm::Message]',
+        traits          => ['Array'],
+        handles         => {
+            add_message     => 'unshift',
+            all_messages    => 'elements',
+        },
+        default         => sub { return [] },
     );
 
     has 'self_url' => (
@@ -265,11 +276,11 @@ package App::HomelyAlarm {
     sub dispatch_GET_twilio_twiml {
         my ($self,$req) = @_;
         
-        my $call = $self->find_message( call_sid => $req->param('CallSid'));
+        my $recipient = $self->find_recipient( call_sid => $req->param('CallSid'));
         return _reply_error(404,"Call not found",$req)
-            unless $call;
+            unless $recipient;
         
-        my $message = $call->message;
+        my $message = $recipient->message->message;
         $message =~ s/&/&amp;/g;
         $message =~ s/>/&gt;/g;
         $message =~ s/</&lt;/g;
@@ -363,14 +374,21 @@ TWIML
         }
         
         $message->process();
-        # TODO store $message somewhere
-        
-        return $message;
+        $self->add_message($message);
     }
     
     sub find_recipient {
+        my ($self,%params) = @_;
         
-        # TODO
+        foreach my $message ($self->all_messages) {
+            RECIPIENT:foreach my $recipient ($self->all_recipients) {
+                foreach my $key (keys %params) {
+                    next RECIPIENT
+                        unless ($recipient->$key eq $params{$key});
+                }
+                return $recipient;
+            }
+        }
     }
     
     sub authenticate_alarm {
@@ -418,21 +436,14 @@ TWIML
         return 1;
     }
     
-    sub has_timer {
-        my ($self,$id,$data) = @_;
-        
-        my $timer = $data->{type};
-        return defined $self->timer->{$timer};
-    }
-    
     sub add_timer {
         my ($self,$id,$delay,$data) = @_;
         
-        log("Start %s alarm timer",$id);
+        _log("Start %s alarm timer",$id);
         $self->timer->{$id} = AnyEvent->timer( 
             after   => $delay || 60, 
             cb      => sub { 
-                $self->clear_timer($id)
+                $self->clear_timer($id);
                 $self->run_notify($data);
             }
         );
@@ -483,7 +494,5 @@ App::HomelyAlarm::Command::Run - Run the HomelyAlarm Server
 
 =cut
 }
-
-App::HomelyAlarm::TimerManager {}
 
 1;
