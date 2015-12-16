@@ -111,19 +111,19 @@ HomelyAlarm.prototype.handleWarning = function (eventConfig,event) {
 HomelyAlarm.prototype.handleEvent = function(action,event,recipients) {
     var self = this;
     
-    var params = { id: event.id };
-    _.each(['id','message','title','type','delay'],function(key) {
+    var params = { 
+        id: event.id,
+        language: self.controller.defaultLang
+    };
+    _.each(['message','title','type','delay'],function(key) {
         if (typeof(event[key]) !== 'undefined') {
             params[key] = event[key];
         }
     });
     
-    params.language = self.controller.defaultLang;
-    
     if (typeof(recipients) !== 'undefined') {
         params.recipients = recipients;
     }
-
     self.remoteCall(action,params);
 };
 
@@ -180,8 +180,8 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
     
     // Build query_string
     params = params || {};
-    params.action = action;
     params.time = (new Date()).getTime();
+    
     var queryString = JSON.stringify(params);
     
     // Build URL
