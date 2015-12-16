@@ -118,6 +118,8 @@ HomelyAlarm.prototype.handleEvent = function(action,event,recipients) {
         }
     });
     
+    params.language = self.controller.defaultLang;
+    
     if (typeof(recipients) !== 'undefined') {
         params.recipients = recipients;
     }

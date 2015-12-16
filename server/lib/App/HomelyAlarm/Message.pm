@@ -15,6 +15,13 @@ package App::HomelyAlarm::Message {
         required        => 1
     );
     
+    has 'language' => (
+        is              => 'rw',
+        isa             => 'Str',
+        required        => 1,
+        default         => 'en-US'
+    );
+    
     has 'recipients' => (
         is              => 'ro',
         isa             => 'ArrayRef[App::HomelyAlarm::Recipients]',

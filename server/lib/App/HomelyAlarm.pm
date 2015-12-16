@@ -286,13 +286,17 @@ package App::HomelyAlarm {
         $message =~ s/'/&apos;/g;
         $message =~ s/"/&quot;/g;
         
+        my $language = $recipient->message->language;
+        $language = 'en-gb'
+            unless $language ~~ [qw(en es fr it de)];
+        
         return [
             200,
             [ 'Content-Type' => 'text/xml' ],
             [ <<TWIML
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="woman" language="en-US">$message</Say>
+    <Say voice="woman" language="$language">$message</Say>
     <Hangup/>
 </Response>
 TWIML
@@ -364,7 +368,7 @@ TWIML
             (
                 map { $_ => $payload->{$_} }
                 grep { defined  $payload->{$_} }
-                qw(message title type)
+                qw(message title type language)
             )
         );
         
