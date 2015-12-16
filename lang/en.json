@@ -1,11 +1,12 @@
 {
+   "call_label" : "Call telephone",
    "description" : "Description",
    "email_label" : "E-Mail Address",
    "events_label" : "Events",
    "eventtype_label" : "Event Type",
    "recipients_label" : "Recipients",
+   "secret_helper" : "Shared secret of the HomelyAlarm server",
    "secret_label" : "Server secret",
-   "secret_helper": "Shared secret of the HomelyAlarm server",
    "server_label" : "Server address",
    "severity_1" : "Low",
    "severity_2" : "Medium",
@@ -24,8 +25,7 @@
    "type_intrusion" : "Intrusion",
    "type_label" : "Alarm type",
    "type_other" : "Other",
-   "type_smoke" : "Smoke",
-   "type_tamper" : "Tampering",
    "type_rain" : "Rain",
-   "voice_label" : "Voice message"
+   "type_smoke" : "Smoke",
+   "type_tamper" : "Tampering"
 }

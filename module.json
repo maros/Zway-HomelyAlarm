@@ -7,7 +7,7 @@
     },
     "dependencies":[],
     "homepage":"http://k-1.com",
-    "icon":"icon_on.png",
+    "icon":"icon.png",
     "maturity":"stable",
     "moduleName":"HomelyAlarm",
     "options":{
@@ -123,7 +123,7 @@
                             "pattern": "\\+[1-9][0-9]+",
                             "format": "email"
                         },
-                        "voice": {
+                        "call": {
                             "type" : "boolean"
                         },
                         "sms": {
