@@ -56,11 +56,13 @@ package App::HomelyAlarm::Recipient {
     
     sub set_success {
         my ($self) = @_;
+        Homely::Alarm::_log('Mark recipient as successful');
         $self->status('success');
     }
     
     sub set_fail {
         my ($self) = @_;
+        Homely::Alarm::_log('Mark recipient as failed. Retry if possible');
         $self->status('fail');
         $self->process;
     }
@@ -70,6 +72,8 @@ package App::HomelyAlarm::Recipient {
         
         return
             if $self->status eq 'success';
+        
+        Homely::Alarm::_log('Processing recipient');
         
         if ($self->has_call && ! $self->has_call_sid) {
             $self->process_call();
@@ -86,6 +90,7 @@ package App::HomelyAlarm::Recipient {
         my $app     = App::HomelyAlarm->instance;
         my $message = $self->message->message;
         my $type    = $self->message->type;
+        my $title   = $self->message->title;
         
         Homely::Alarm::_log('Send email to %s',$self->email);
         
@@ -95,12 +100,18 @@ package App::HomelyAlarm::Recipient {
             ->to($self->email)
             ->subject("HomelyAlarm.$type:$message")
             ->text_body(qq[
+                Zone:     $title  
                 Message:  $message
                 Type: $type
                 --
                 Sent by HomelyAlarm
             ])
             ->send();
+         use Data::Dumper;
+         {
+           local $Data::Dumper::Maxdepth = 2;
+           warn __FILE__.':line'.__LINE__.':'.Dumper($result);
+         }
     }
     
     sub process_sms {
