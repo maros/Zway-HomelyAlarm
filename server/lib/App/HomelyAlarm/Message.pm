@@ -40,6 +40,12 @@ package App::HomelyAlarm::Message {
         required        => 1
     );
     
+    has 'timer' => (
+        is              => 'rw',
+        isa             => 'ArrayRef',
+        clearer         => 'clear_timer',
+    );
+    
     sub add_recipient {
         my ($self,$params) = @_;
         
@@ -60,6 +66,17 @@ package App::HomelyAlarm::Message {
         foreach my $recipient (@{$self->recipients}) {
             $recipient->process();
         }
+        
+        # Keep message for 30 min
+        $self->timer(
+            AnyEvent->timer( 
+                after   => (App::HomelyAlarm->instance->duplicate_timeout * 60), 
+                cb      => sub {
+                    $self->clear_timer();
+                    App::HomelyAlarm->instance->remove_message($self)
+                }
+            )
+        );
     }
 }
 

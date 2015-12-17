@@ -31,6 +31,13 @@ package App::HomelyAlarm {
     use MIME::Base64 qw(encode_base64);
     use URI::Escape qw(uri_escape);
     
+    option 'duplicate_timeout' => (
+        is              => 'rw',
+        isa             => 'Int',
+        documentation   => 'Number of minutes between two identical messages',
+        default         => 60,
+    );
+    
     option 'port' => (
         is              => 'rw',
         isa             => 'Int',
@@ -98,6 +105,9 @@ package App::HomelyAlarm {
         handles         => {
             add_message     => 'unshift',
             all_messages    => 'elements',
+            message_index   => 'first_index',
+            message_delete  => 'delete',
+            
         },
         default         => sub { return [] },
     );
@@ -109,6 +119,12 @@ package App::HomelyAlarm {
     
     sub instance {
         return $INSTANCE;
+    }
+    
+    sub remove_message {
+        my ($self,$message) = @_;
+        my $index = $self->message_index($message);
+        $self->message_delete($index);
     }
     
     sub run {
@@ -126,7 +142,7 @@ package App::HomelyAlarm {
         my $term_signal = AnyEvent->signal(
             signal  => "TERM", 
             cb      => sub { 
-                _log('Recieved INT signal');
+                _log('Recieved TERM signal');
                 $cv->send;
             }
         );
@@ -151,7 +167,7 @@ package App::HomelyAlarm {
         
         $cv->recv;
         
-        _log('End loop');
+        _log('Shutdown server');
         
         $INSTANCE = undef;
     }
@@ -389,6 +405,13 @@ TWIML
                 qw(message title type language)
             )
         );
+        
+        foreach my $previous ($self->all_messages) {
+            if ($previous->type eq $message->type) {
+                _log("Ignoring message. Same message already in queue");
+                return;
+            }
+        }
         
         foreach my $recipient (@{$payload->{recipients}}) {
             $message->add_recipient($recipient);
