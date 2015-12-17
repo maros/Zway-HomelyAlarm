@@ -303,16 +303,17 @@ package App::HomelyAlarm {
     sub dispatch_GET_twilio_twiml {
         my ($self,$req) = @_;
         
-        my $recipient = $self->find_recipient( call_sid => $req->param('CallSid'));
+        my $recipient = $self->find_recipient( call_id => $req->param('CallSid'));
         return _reply_error(404,"Call not found",$req)
             unless $recipient;
         
-        my $message = $recipient->message->message;
-        $message =~ s/&/&amp;/g;
-        $message =~ s/>/&gt;/g;
-        $message =~ s/</&lt;/g;
-        $message =~ s/'/&apos;/g;
-        $message =~ s/"/&quot;/g;
+        my $message = $recipient->message;
+        my $text = $message->message;
+        $text =~ s/&/&amp;/g;
+        $text =~ s/>/&gt;/g;
+        $text =~ s/</&lt;/g;
+        $text =~ s/'/&apos;/g;
+        $text =~ s/"/&quot;/g;
         
         my $language    = $message->language;
         
@@ -324,6 +325,14 @@ package App::HomelyAlarm {
             $language = 'en-GB';
         }
         
+        # More than one participant - start a conference
+        my $conference = '';
+        my @recipients = $message->find_recipients(sub { $_->has_call });
+        if (scalar @recipients) {
+            $conference = qq[<Dial timeLimit="300"><Conference beep="false" waitUrl="" startConferenceOnEnter="true" endConferenceOnExit="true">].
+                $message->type.
+                q[</Conference></Dial>];
+        }
         
         return [
             200,
@@ -331,7 +340,8 @@ package App::HomelyAlarm {
             [ <<TWIML
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="woman" language="$language">$message</Say>
+    <Say voice="alice" language="$language">$text</Say>
+    $conference
     <Hangup/>
 </Response>
 TWIML
