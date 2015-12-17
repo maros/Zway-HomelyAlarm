@@ -10,6 +10,16 @@ package App::HomelyAlarm {
     no if $] >= 5.018000, warnings => qw(experimental::smartmatch);
     
     our $INSTANCE;
+    my %LANGUAGES = (
+        en  => 'en-GB',
+        es  => 'es-ES',
+        fr  => 'fr-FR',
+        it  => 'it-IT',
+        da  => 'da-DK',
+        ru  => 'ru-RU',
+        sv  => 'sv-SE',
+        cn  => 'zh-CN',
+    );
     
     use AnyEvent::HTTP;
     use Twiggy::Server;
@@ -287,9 +297,16 @@ package App::HomelyAlarm {
         $message =~ s/'/&apos;/g;
         $message =~ s/"/&quot;/g;
         
-        my $language = $recipient->message->language;
-        $language = 'en-gb'
-            unless $language ~~ [qw(en es fr it de)];
+        my $language    = $message->language;
+        
+        if ($language =~ /^[A-Za-z]{2}$/
+            && defined $LANGUAGES{lc($language)}) {
+            $language = $LANGUAGES{$language};
+        } elsif ($language !~ /^[a-z]-[A-Z]$/) {
+            _log('Invalid language %s. Fallback to en-GB',$language);
+            $language = 'en-GB';
+        }
+        
         
         return [
             200,
