@@ -1,18 +1,65 @@
 # Zway-HomelyAlarm
 
-TODO
+Send notifications originating from various sources, such as security zones to alert
+selected recipients. This module consists of two parts, a zway automation module, and
+a server that needs to be deployed on a separate, publicly reachable, server.
 
 # Configuration
 
-TODO
+## server
+
+URL of the HomelyAlarm server
+
+## secret
+
+Shared secret of the HomelyAlarm server
+
+## recipients
+
+List of recipients
+
+## recipients.severity
+
+Contact this recipient when event severity is greater than or equal to the event
+severity level.
+
+## recipients.telephone, recipients.email
+
+Telephone number and e-mail address.
+
+## recipients.call, recipients.sms
+
+Selects if recipient telephone number should be used for calls, SMS or both
+
+## events
+
+List of events that should be handled
+
+## events.type
+
+Type of event to trigger notification.
+
+## events.severity
+
+Severity level associated with the event
 
 # Events
 
-TODO
+The module listens to the configured events.
+
+No events are emitted.
 
 # Virtual Devices
 
+No virtual device is created
+
+# Alarm Server
+
+TODO
+
 # Installation
+
+First install the module on the zway host.
 
 ```shell
 cd /opt/z-way-server/automation/modules
@@ -30,6 +77,11 @@ git checkout tags/1.02
 # For development version
 git checkout -b master --track origin/master
 ```
+
+Then you need to install the alarm server on a second host that can be
+reached publicly.
+
+TODO
 
 # License
 
