@@ -1,6 +1,7 @@
 package App::HomelyAlarm {
     use 5.016;
     
+    use App::HomelyAlarm::Type;
     use App::HomelyAlarm::Message;
     use App::HomelyAlarm::Recipient;
     
@@ -57,14 +58,14 @@ package App::HomelyAlarm {
     
     option 'caller_number' => (
         is              => 'ro',
-        isa             => 'Str',
+        isa             => 'App::HomelyAlarm::Type::Telephone',
         documentation   => 'Caller telephone number',
         required        => 1,
     );
     
     option 'sender_email' => (
         is              => 'ro',
-        isa             => 'Str',
+        isa             => 'App::HomelyAlarm::Type::Email',
         documentation   => 'Sender e-mail address',
         required        => 1,
     );

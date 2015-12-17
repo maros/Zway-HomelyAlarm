@@ -5,6 +5,12 @@ package App::HomelyAlarm::Recipient {
     
     use Email::Stuffer;
     
+    has 'prefered' => (
+        is              => 'rw',
+        isa             => 'App::HomelyAlarm::Type::Prefered',
+        default         => 'call',
+    );
+    
     has 'status' => (
         is              => 'rw',
         isa             => 'Str',
@@ -20,19 +26,19 @@ package App::HomelyAlarm::Recipient {
     
     has 'email' => (
         is              => 'ro',
-        isa             => 'Str',
+        isa             => 'App::HomelyAlarm::Type::Email',
         predicate       => 'has_email'
     );
     
     has 'call' => (
         is              => 'ro',
-        isa             => 'Str',
+        isa             => 'App::HomelyAlarm::Type::Telephone',
         predicate       => 'has_call'
     );
     
     has 'sms' => (
         is              => 'ro',
-        isa             => 'Str',
+        isa             => 'App::HomelyAlarm::Type::Telephone',
         predicate       => 'has_sms'
     );
     
