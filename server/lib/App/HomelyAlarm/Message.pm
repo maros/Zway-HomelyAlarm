@@ -29,7 +29,7 @@ package App::HomelyAlarm::Message {
         default         => sub { [] },
         traits          => ['Array'],
         handles         => {
-            push_recipient   => 'push',
+            push_recipient  => 'push',
             all_recipients  => 'elements',
         },
     );
@@ -47,7 +47,7 @@ package App::HomelyAlarm::Message {
             (
                 map { $_ => $params->{$_} }
                 grep { defined $params->{$_} }
-                qw(email call sms)
+                qw(email call sms prefered)
             ),
             message     => $self,
         );

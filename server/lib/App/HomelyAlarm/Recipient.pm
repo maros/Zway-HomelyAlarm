@@ -42,32 +42,32 @@ package App::HomelyAlarm::Recipient {
         predicate       => 'has_sms'
     );
     
-    has 'call_sid' => (
+    has 'call_id' => (
         is              => 'rw',
         isa             => 'Str',
-        predicate       => 'has_call_sid'
+        predicate       => 'has_call_id'
     );
     
-    has 'sms_sid' => (
+    has 'sms_id' => (
         is              => 'rw',
         isa             => 'Str',
-        predicate       => 'has_sms_sid'
+        predicate       => 'has_sms_id'
     );
     
-    has 'email_message_id' => (
+    has 'email_id' => (
         is              => 'rw',
         isa             => 'Str',
-        predicate       => 'has_email_message_id'
+        predicate       => 'has_email_id'
     );
     
     sub set_success {
-        my ($self) = @_;
+        my ($self,$source) = @_;
         App::HomelyAlarm::_log('Mark recipient as successful');
         $self->status('success');
     }
     
     sub set_fail {
-        my ($self) = @_;
+        my ($self,$source) = @_;
         App::App::HomelyAlarm::_log('Mark recipient as failed. Retry if possible');
         $self->status('fail');
         $self->process;
@@ -81,12 +81,24 @@ package App::HomelyAlarm::Recipient {
         
         App::HomelyAlarm::_log('Processing recipient');
         
-        if ($self->has_call && ! $self->has_call_sid) {
-            $self->process_call();
-        } elsif ($self->has_sms && ! $self->has_sms_sid) {
-            $self->process_sms();
-        } elsif ($self->has_email() && ! $self->has_email_message_id) {
-            $self->process_email();
+        my @methods = ($self->prefered);
+        push(@methods,'sms')
+            unless 'sms' ~~ \@methods;
+        push(@methods,'email')
+            unless 'email' ~~ \@methods;
+        push(@methods,'call')
+            unless 'call' ~~ \@methods;
+        
+        foreach my $method (@methods) {
+            no strict 'refs';
+            my $check_id    = 'has_'.$method.'_id';
+            my $check       = 'has_'.$method;
+            my $process     = 'process_'.$method;
+            
+            if ($self->$check && ! $self->$check_id) {
+                $self->$process();
+                return;
+            }
         }
     }
     
@@ -108,11 +120,12 @@ package App::HomelyAlarm::Recipient {
             ->text_body(qq[
                 Zone:     $title  
                 Message:  $message
-                Type: $type
+                Type:     $type
                 --
                 Sent by HomelyAlarm
             ])
             ->send();
+         $self->email_id('ok');
          use Data::Dumper;
          {
            local $Data::Dumper::Maxdepth = 2;
@@ -136,7 +149,7 @@ package App::HomelyAlarm::Recipient {
             sub {
                 my ($data,$headers) = @_;
                 App::HomelyAlarm::_log($data);
-                $self->sms_sid($data->{sid});
+                $self->sms_id($data->{sid});
             },
         );
     }
@@ -160,7 +173,7 @@ package App::HomelyAlarm::Recipient {
             sub {
                 my ($data,$headers) = @_;
                 App::HomelyAlarm::_log($data);
-                $self->call_sid($data->{sid});
+                $self->call_id($data->{sid});
             },
         );
     }
