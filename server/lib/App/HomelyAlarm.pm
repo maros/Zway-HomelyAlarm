@@ -268,29 +268,30 @@ package App::HomelyAlarm {
         
         my $sid;
         
+        _log('Got %s',$req->body_parameters);
+        
         if ($sid = $req->param('CallSid')) {
-            my $recipient = $self->find_recipient( call_sid => $sid);
+            my $recipient = $self->find_recipient( call_id => $sid );
             return _reply_error(404,"Call not found",$req)
                 unless $recipient;
             
-            
-            _log("Transaction status ".$recipient->call.": ".$req->param('CallStatus'));
+            _log("Call status ".$recipient->call.": ".$req->param('CallStatus'));
             if ($req->param('CallStatus') ne 'completed') {
                 # send fallback SMS
-                $recipient->set_failed();
+                $recipient->set_fail('call');
             } else {
-                $recipient->set_success();
+                $recipient->set_success('call');
             }
         } elsif ($sid = $req->param('SmsSid')) {
-            my $recipient = $self->find_recipient( sms_sid => $sid);
+            my $recipient = $self->find_recipient( sms_id => $sid);
             return _reply_error(404,"SMS not found",$req)
                 unless $recipient;
             
             _log("SMS status ".$recipient->sms.": ".$req->param('SmsStatus'));
-            if ($req->param('SmsStatus') ne 'completed') {
-                $recipient->set_failed();
+            if ($req->param('SmsStatus') eq 'delivered') {
+                $recipient->set_failed('sms');
             } else {
-                $recipient->set_success();
+                $recipient->set_success('sms');
             }
         } else {
             return _reply_error(404,"Missing parameters",$req);
