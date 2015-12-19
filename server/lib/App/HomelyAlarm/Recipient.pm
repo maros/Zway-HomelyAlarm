@@ -2,6 +2,7 @@ package App::HomelyAlarm::Recipient {
     use 5.016;
     
     use Moose;
+    no if $] >= 5.018000, warnings => qw(experimental::smartmatch);
     
     use Email::Stuffer;
     

@@ -329,7 +329,7 @@ package App::HomelyAlarm {
         my $conference = '';
         my @recipients = $message->find_recipients(sub { $_->has_call });
         if (scalar @recipients) {
-            $conference = qq[<Dial timeLimit="300"><Conference beep="false" waitUrl="" startConferenceOnEnter="true" endConferenceOnExit="true">].
+            $conference = qq[<Dial timeLimit="300"><Conference beep="false" startConferenceOnEnter="true" endConferenceOnExit="true">].
                 $message->type.
                 q[</Conference></Dial>];
         }

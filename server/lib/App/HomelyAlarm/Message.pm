@@ -31,6 +31,7 @@ package App::HomelyAlarm::Message {
         handles         => {
             push_recipient  => 'push',
             all_recipients  => 'elements',
+            find_recipients => 'grep',
         },
     );
     
