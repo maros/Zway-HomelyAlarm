@@ -62,8 +62,8 @@ HomelyAlarm.prototype.stop = function () {
 HomelyAlarm.prototype.listenEvents = {
     "alarm":            "handleAlarm",
     "stop":             "handleStop",
-    "delayed_alarm":    "handleDelayedAlarm",
-    "delayed_cancel":   "handleDelayedCancel",
+    "delayAlarm":       "handleDelayAlarm",
+    "delayCancel":      "handleDelayCancel",
     "warning":          "handleWarning"
 };
 
@@ -87,17 +87,17 @@ HomelyAlarm.prototype.handleStop = function (eventConfig,event) {
     //self.handleEvent('stop',event);
 };
 
-HomelyAlarm.prototype.handleDelayedAlarm = function (eventConfig,event) {
+HomelyAlarm.prototype.handleDelayAlarm = function (eventConfig,event) {
     var self = this;
     
-    console.log('[HomelyAlarm] Got '+eventConfig.type+' delayed_alarm event. severity '+eventConfig.severity);
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' delayAlarm event. severity '+eventConfig.severity);
     self.handleEvent('delayed',event,self.getRecipients(eventConfig.severity));
 };
 
-HomelyAlarm.prototype.handleDelayedCancel = function (eventConfig,event) {
+HomelyAlarm.prototype.handleDelayCancel = function (eventConfig,event) {
     var self = this;
     
-    console.log('[HomelyAlarm] Got '+eventConfig.type+' delayed_cancel event. severity '+eventConfig.severity);
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' delayCancel event. severity '+eventConfig.severity);
     self.handleEvent('cancel',event);
 };
 
@@ -211,7 +211,7 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
         async: true,
         success: function(response) {},
         error: function(response) {
-            console.error('[HomelyAlarm] Could not call alarm server');
+            console.error('[HomelyAlarm] Could not call alarm server: '+response.status );
         }
     });
 };
