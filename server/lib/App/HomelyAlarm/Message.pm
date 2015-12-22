@@ -3,6 +3,12 @@ package App::HomelyAlarm::Message {
     
     use Moose;
     
+    has 'time' => (
+        is              => 'rw',
+        isa             => 'Int',
+        default         => sub { time() }
+    );
+    
     has 'message' => (
         is              => 'rw',
         isa             => 'Str',
