@@ -76,35 +76,35 @@ HomelyAlarm.prototype.severityActions = [
 HomelyAlarm.prototype.handleAlarm = function (eventConfig,event) {
     var self = this;
     
-    console.log('[HomelyAlarm] Got '+eventConfig.type+' alarm event. severity '+eventConfig.severity);
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' alarm event (severity '+eventConfig.severity+')');
     self.handleEvent('start',event,self.getRecipients(eventConfig.severity));
 };
 
 HomelyAlarm.prototype.handleStop = function (eventConfig,event) {
     var self = this;
     
-    console.log('[HomelyAlarm] Got '+eventConfig.type+' stop event. severity '+eventConfig.severity);
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' stop event (severity '+eventConfig.severity+')');
     //self.handleEvent('stop',event);
 };
 
 HomelyAlarm.prototype.handleDelayAlarm = function (eventConfig,event) {
     var self = this;
     
-    console.log('[HomelyAlarm] Got '+eventConfig.type+' delayAlarm event. severity '+eventConfig.severity);
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' delayAlarm event (severity '+eventConfig.severity+')');
     self.handleEvent('delayed',event,self.getRecipients(eventConfig.severity));
 };
 
 HomelyAlarm.prototype.handleDelayCancel = function (eventConfig,event) {
     var self = this;
     
-    console.log('[HomelyAlarm] Got '+eventConfig.type+' delayCancel event. severity '+eventConfig.severity);
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' delayCancel event (severity '+eventConfig.severity+')');
     self.handleEvent('cancel',event);
 };
 
 HomelyAlarm.prototype.handleWarning = function (eventConfig,event) {
     var self = this;
     
-    console.log('[HomelyAlarm] Got '+eventConfig.type+' warning event.');
+    console.log('[HomelyAlarm] Got '+eventConfig.type+' warning event');
     self.handleEvent('warning',event,self.getRecipients(1));
 };
 
