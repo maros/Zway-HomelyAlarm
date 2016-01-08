@@ -1,6 +1,6 @@
 {
    "call_label" : "Call telephone",
-   "description" : "Description",
+   "m_descr" : "Description",
    "email_label" : "E-Mail Address",
    "events_label" : "Events",
    "eventtype_label" : "Event Type",
@@ -16,7 +16,7 @@
    "severity_recipient_helper" : "This recipient will be selected if the event severity matches the recipient severity",
    "sms_label" : "Send SMS",
    "telephone_label" : "Telephone Number",
-   "title" : "HomelyAlarm notification",
+   "m_title" : "HomelyAlarm notification",
    "type_cold" : "Low temperature",
    "type_flood" : "Flooding",
    "type_gas" : "Gas",

@@ -2,8 +2,8 @@
     "author":"Maroš Kollár",
     "category":"notifications",
     "defaults":{
-        "description":"__description__",
-        "title":"__title__"
+        "description":"__m_descr__",
+        "title":"__m_title__"
     },
     "dependencies":[],
     "homepage":"http://k-1.com",
