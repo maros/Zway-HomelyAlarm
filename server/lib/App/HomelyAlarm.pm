@@ -399,7 +399,7 @@ TWIML
                 if ($headers->{Status} =~ /^2/) {
                     $callback->($api_response,$headers);
                 } else {
-                    _log("Error placing call: ".$data)
+                    _log("Error placing call: ".$data);
                 }
 
             }
@@ -522,14 +522,16 @@ TWIML
         ];
     }
     
-    
     sub _body_data {
         my ($req) = @_;
         
         if (($req->method eq 'POST' || $req->method eq 'PUT') 
-            && $req->header('content-type') eq 'application/json') {
-            return JSON::XS::decode_json($req->content)
+            && $req->header('Content-Type') eq 'application/json') {
+            my $json = JSON::XS::decode_json($req->content);
+            return $json;
         }
+        
+        warn "No PUT/POST with valid content type";
         return;
     }
     
