@@ -289,7 +289,7 @@ package App::HomelyAlarm {
             
             _log("SMS status ".$recipient->sms.": ".$req->param('SmsStatus'));
             if ($req->param('SmsStatus') eq 'delivered') {
-                $recipient->set_failed('sms');
+                $recipient->set_fail('sms');
             } else {
                 $recipient->set_success('sms');
             }
