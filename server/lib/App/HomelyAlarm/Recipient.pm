@@ -69,7 +69,7 @@ package App::HomelyAlarm::Recipient {
     
     sub set_fail {
         my ($self,$source) = @_;
-        App::App::HomelyAlarm::_log('Mark recipient as failed. Retry if possible');
+        App::HomelyAlarm::_log('Mark recipient as failed. Retry if possible');
         $self->status('fail');
         $self->process;
     }
