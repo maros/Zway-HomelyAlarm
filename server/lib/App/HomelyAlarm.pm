@@ -268,8 +268,6 @@ package App::HomelyAlarm {
         
         my $sid;
         
-        _log('Got %s',$req->body_parameters);
-        
         if ($sid = $req->param('CallSid')) {
             my $recipient = $self->find_recipient( call_id => $sid );
             return _reply_error(404,"Call not found",$req)
