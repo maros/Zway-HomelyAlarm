@@ -256,7 +256,7 @@ package App::HomelyAlarm {
         
         my $data = _body_data($req);
         
-        _log("%s messge",$data->{type});
+        _log("Warning: %s",$data->{type});
         
         $self->run_notify($data);
         
@@ -407,6 +407,8 @@ TWIML
     sub run_notify {
         my ($self,$payload) = @_;
         
+        $payload->{title} //= 'Notification';
+        
         my $message = App::HomelyAlarm::Message->new(
             (
                 map { $_ => $payload->{$_} }
@@ -529,7 +531,7 @@ TWIML
             return $json;
         }
         
-        warn "No PUT/POST with valid content type";
+        warn "No PUT/POST with valid content type: ".$req->method.' - '.$req->header('Content-Type');
         return;
     }
     
