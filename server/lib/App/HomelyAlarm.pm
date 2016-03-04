@@ -525,14 +525,17 @@ TWIML
     sub _body_data {
         my ($req) = @_;
         
-        if (($req->method eq 'POST' || $req->method eq 'PUT') 
-            && $req->header('Content-Type') eq 'application/json') {
-            my $json = JSON::XS::decode_json($req->content);
-            return $json;
+        unless ($req->method eq 'POST' || $req->method eq 'PUT') {
+            warn "No PUT/POST request but ".$req->method;
         }
         
-        warn "No PUT/POST with valid content type: ".$req->method.' - '.$req->header('Content-Type');
-        return;
+        unless ($req->header('Content-Type') eq 'application/json'
+            || $req->content =~ /^{/) {
+            warn "No valid content type: ".$req->header('Content-Type');
+        }
+        
+        my $json = JSON::XS::decode_json($req->content);
+        return $json;
     }
     
     sub _reply_error {
