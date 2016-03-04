@@ -204,8 +204,9 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
         method: 'POST',
         url: url,
         data: queryString,
+        contentType: "application/json",
         headers: {
-            "Content−Type": "application/json",
+            "Content-Type": "application/json",
             "X-HomelyAlarm-Signature": signature
         },
         async: true,
