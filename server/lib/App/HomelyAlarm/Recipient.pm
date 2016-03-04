@@ -111,6 +111,8 @@ package App::HomelyAlarm::Recipient {
         my $type    = $self->message->type;
         my $title   = $self->message->title;
         
+        # TODO sanitize $title, $message, $type
+        
         App::HomelyAlarm::_log('Send email to %s',$self->email);
         
         # TODO message id
@@ -118,14 +120,14 @@ package App::HomelyAlarm::Recipient {
             ->from($app->sender_email)
             ->to($self->email)
             ->subject("HomelyAlarm.$type:$message")
-            ->text_body(qq[
-                Zone:     $title  
-                Message:  $message
-                Type:     $type
-                --
-                Sent by HomelyAlarm
-            ])
-            ->send();
+            ->text_body(<<MAILBODY
+Zone:     $title  
+Message:  $message
+Type:     $type
+--
+Sent by HomelyAlarm
+MAILBODY
+            )->send();
          $self->email_id('ok');
          use Data::Dumper;
          {
