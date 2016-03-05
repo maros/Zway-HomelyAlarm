@@ -44,7 +44,7 @@ package App::HomelyAlarm {
         documentation   => 'Listening port',
         default         => 1222,
     );
-
+    
     option 'host' => (
         is              => 'rw',
         isa             => 'Str',
@@ -107,11 +107,10 @@ package App::HomelyAlarm {
             all_messages    => 'elements',
             message_index   => 'first_index',
             message_delete  => 'delete',
-            
         },
         default         => sub { return [] },
     );
-
+    
     has 'self_url' => (
         is              => 'rw',
         predicate       => 'has_self_url',
@@ -123,7 +122,7 @@ package App::HomelyAlarm {
     
     sub remove_message {
         my ($self,$message) = @_;
-        my $index = $self->message_index($message);
+        my $index = $self->message_index(sub { $_ eq $message});
         $self->message_delete($index);
     }
     
