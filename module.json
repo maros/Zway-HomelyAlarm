@@ -63,7 +63,7 @@
                         "severity": {
                             "label": "__severity_label__",
                             "helper": "__severity_event_helper__",
-                            "order": 2,
+                            "order": 3,
                             "optionLabels" : [
                                 "__severity_1__",
                                 "__severity_2__",
@@ -81,11 +81,18 @@
                                   "__type_heat__",
                                   "__type_cold__",
                                   "__type_tamper__",
-                                  "__type_other__",
-                                  "__type_rain__"
+                                  "__type_rain__",
+                                  "__type_other__"
                            ],
                            "type" : "select"
-                        }
+                        },
+                        "otherType" : {
+                            "dependencies" : {
+                               "type" : "other"
+                            },
+                            "label" : "__other_type_label__",
+                            "order" : 2
+                         }
                     }
                 }
             }
@@ -140,6 +147,11 @@
                 "minItems": 1,
                 "items": {
                     "type": "object",
+                    "dependencies" : {
+                        "otherType" : [
+                           "type"
+                        ]
+                     },
                     "properties": {
                         "type": {
                             "required": true,
@@ -151,18 +163,21 @@
                               "security.heat",
                               "security.cold",
                               "security.tamper",
-                              "security.other",
-                              "security.rain"
+                              "security.rain",
+                              "other"
                              ]
                         },
-                          "severity": {
+                        "severity": {
                               "enum" : [
                                     1,
                                     2,
                                     3
                                 ],
                                 "required": true
-                          }
+                        },
+                        "otherType" : {
+                            "type" : "string"
+                        }
                     }
                 }
             }

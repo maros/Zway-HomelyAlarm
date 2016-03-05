@@ -34,7 +34,11 @@ HomelyAlarm.prototype.init = function (config) {
     _.each(self.config.events,function(element,index) {
         _.each(self.listenEvents,function(handlerName,event){
             var handler = _.bind(self[handlerName],self,element);
-            self.controller.on(element.type+'.'+event,handler);
+            var type = element.type;
+            if (type === 'other') {
+                type = 'security.'.element.otherType;
+            }
+            self.controller.on(type+'.'+event,handler);
             self.eventHandlers[index+event] = handler;
         });
     });
@@ -47,7 +51,11 @@ HomelyAlarm.prototype.stop = function () {
     
     _.each(self.config.events,function(element,index) {
         _.each(self.listenEvents,function(handlerName,event){
-            self.controller.off(element.type+'.'+event,self.eventHandlers[index+event]);
+            var type = element.type;
+            if (type === 'other') {
+                type = 'security.'.element.otherType;
+            }
+            self.controller.off(type+'.'+event,self.eventHandlers[index+event]);
         });
     });
     self.eventHandlers = {};
