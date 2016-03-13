@@ -43,7 +43,7 @@ HomelyAlarm.prototype.init = function (config) {
         });
     });
     
-    executeFile("modules/HomelyAlarm/sha1.js");
+    executeFile(self.moduleBasePath()+"/sha1.js");
 };
 
 HomelyAlarm.prototype.stop = function () {
