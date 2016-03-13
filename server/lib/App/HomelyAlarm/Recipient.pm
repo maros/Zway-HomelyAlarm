@@ -121,7 +121,7 @@ package App::HomelyAlarm::Recipient {
             ->to($self->email)
             ->subject("HomelyAlarm.$type:$message")
             ->text_body(<<MAILBODY
-Zone:     $title  
+Zone:     $title
 Message:  $message
 Type:     $type
 --
