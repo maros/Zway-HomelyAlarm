@@ -36,7 +36,7 @@ HomelyAlarm.prototype.init = function (config) {
             var handler = _.bind(self[handlerName],self,element);
             var type = element.type;
             if (type === 'other') {
-                type = 'security.'.element.otherType;
+                type = 'security.' + element.otherType;
             }
             self.controller.on(type+'.'+event,handler);
             self.eventHandlers[index+event] = handler;
