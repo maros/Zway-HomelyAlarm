@@ -115,25 +115,23 @@ package App::HomelyAlarm::Recipient {
         
         App::HomelyAlarm::_log('Send email to %s',$self->email);
         
-        # TODO message id
-        my $result = Email::Stuffer
-            ->from($app->sender_email)
-            ->to($self->email)
-            ->subject("HomelyAlarm.$type:$message")
-            ->text_body(<<MAILBODY
+        my $body = <<MAILBODY;
 Zone:     $title
 Message:  $message
 Type:     $type
 --
 Sent by HomelyAlarm
 MAILBODY
-            )->send();
+        $body =~ s/\n/\r\n/g;
+        
+        # TODO message id
+        my $result = Email::Stuffer
+            ->from($app->sender_email)
+            ->to($self->email)
+            ->subject("HomelyAlarm.$type:$message")
+            ->text_body($body)
+            ->send();
          $self->email_id('ok');
-         use Data::Dumper;
-         {
-           local $Data::Dumper::Maxdepth = 2;
-           warn __FILE__.':line'.__LINE__.':'.Dumper($result);
-         }
     }
     
     sub process_sms {
