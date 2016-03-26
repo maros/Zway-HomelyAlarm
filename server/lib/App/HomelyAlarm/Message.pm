@@ -60,7 +60,7 @@ package App::HomelyAlarm::Message {
             (
                 map { $_ => $params->{$_} }
                 grep { defined $params->{$_} }
-                qw(email call sms prefered)
+                ('prefered', keys %App::HomelyAlarm::Type::METHODS)
             ),
             message     => $self,
         );

@@ -4,7 +4,14 @@ package App::HomelyAlarm::Type {
     
     use Moose::Util::TypeConstraints;
     
-    enum 'App::HomelyAlarm::Type::Prefered', [qw(call sms email pushbullet)];
+    our %METHODS = (
+        email       => 'App::HomelyAlarm::Type::Email',
+        call        => 'App::HomelyAlarm::Type::Telephone',
+        sms         => 'App::HomelyAlarm::Type::Telephone',
+        pushbullet  => 'Str',
+    );
+    
+    enum 'App::HomelyAlarm::Type::Prefered', [keys %METHODS];
     
     subtype 'App::HomelyAlarm::Type::Email',
         as 'Str',
