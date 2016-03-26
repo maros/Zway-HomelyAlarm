@@ -26,53 +26,25 @@ package App::HomelyAlarm::Recipient {
         weak_ref        => 1,
     );
     
-    has 'email' => (
-        is              => 'ro',
-        isa             => 'App::HomelyAlarm::Type::Email',
-        predicate       => 'has_email'
+    my %METHODS = (
+        email       => 'App::HomelyAlarm::Type::Email',
+        call        => 'App::HomelyAlarm::Type::Telephone',
+        sms         => 'App::HomelyAlarm::Type::Telephone',
+        pushbullet  => 'Str',
     );
     
-    has 'call' => (
-        is              => 'ro',
-        isa             => 'App::HomelyAlarm::Type::Telephone',
-        predicate       => 'has_call'
-    );
-    
-    has 'sms' => (
-        is              => 'ro',
-        isa             => 'App::HomelyAlarm::Type::Telephone',
-        predicate       => 'has_sms'
-    );
-    
-    has 'pushbullet' => (
-        is              => 'ro',
-        isa             => 'Str',
-        predicate       => 'has_pushbullet'
-    );
-    
-    has 'call_id' => (
-        is              => 'rw',
-        isa             => 'Str',
-        predicate       => 'has_call_id'
-    );
-    
-    has 'sms_id' => (
-        is              => 'rw',
-        isa             => 'Str',
-        predicate       => 'has_sms_id'
-    );
-    
-    has 'email_id' => (
-        is              => 'rw',
-        isa             => 'Str',
-        predicate       => 'has_email_id'
-    );
-    
-    has 'pushbullet_id' => (
-        is              => 'rw',
-        isa             => 'Str',
-        predicate       => 'has_pushbullet_id'
-    );
+    foreach my $method (keys %METHODS) {
+        has $method => (
+            is              => 'ro',
+            isa             => $METHODS{$method},
+            predicate       => 'has_'.$method
+        );
+        has "${method}_id" => (
+            is              => 'rw',
+            isa             => 'Str',
+            predicate       => 'has_'.$method.'_id'
+        );
+    }
     
     sub set_success {
         my ($self,$source) = @_;
@@ -84,6 +56,11 @@ package App::HomelyAlarm::Recipient {
         my ($self,$source) = @_;
         App::HomelyAlarm::_log('Mark recipient as failed. Retry if possible');
         $self->status('fail');
+        my $id_method = $source.'_id';
+        my $has_method = 'has_'.$id_method;
+        if (! $self->$has_method) {
+            $self->$id_method('fail');
+        }
         $self->process;
     }
     
@@ -96,12 +73,10 @@ package App::HomelyAlarm::Recipient {
         App::HomelyAlarm::_log('Processing recipient');
         
         my @methods = ($self->prefered);
-        push(@methods,'sms')
-            unless 'sms' ~~ \@methods;
-        push(@methods,'email')
-            unless 'email' ~~ \@methods;
-        push(@methods,'call')
-            unless 'call' ~~ \@methods;
+        foreach (qw(sms pusbullet email call)) {
+            push(@methods,$_)
+                unless $_ ~~ \@methods;
+        }
         
         foreach my $method (@methods) {
             no strict 'refs';
@@ -160,9 +135,12 @@ MAILBODY
             'Messages',
             To              => $self->sms,
             Body            => $message,
-            sub {
+            Fail            => sub {
+                $self->set_fail('sms');
+            },
+            Success         => sub {
                 my ($data,$headers) = @_;
-                App::HomelyAlarm::_log($data);
+                App::HomelyAlarm::_log("Processed SMS %s",$data);
                 $self->sms_id($data->{sid});
             },
         );
@@ -184,9 +162,12 @@ MAILBODY
             Method          => 'GET',
             Record          => 'false',
             Timeout         => 60,
-            sub {
+            Fail            => sub {
+                $self->set_fail('call');
+            },
+            Success         => sub {
                 my ($data,$headers) = @_;
-                App::HomelyAlarm::_log($data);
+                App::HomelyAlarm::_log("Processed call %s",$data);
                 $self->call_id($data->{sid});
             },
         );
@@ -214,10 +195,12 @@ MAILBODY
             }),
             sub {
                 my ($data,$headers) = @_;
-                use Data::Dumper;
-                {
-                  local $Data::Dumper::Maxdepth = 3;
-                  warn __FILE__.':line'.__LINE__.':'.Dumper($data,$headers);
+                $guard = undef;
+                if ($headers->{Status} =~ /^2/) {
+                    $self->pushbullet_id('ok');
+                } else {
+                    App::HomelyAlarm::_log("Error sending pushbullet note: %s",$data);
+                    $self->set_fail('pushbullet');
                 }
             }
         );

@@ -350,9 +350,10 @@ TWIML
         my $self = shift;
         my $method = shift;
         my $action = shift;
-        my $callback = pop;
         my %args = @_;
         
+        my $success = delete $args{Success};
+        my $fail = delete $args{Fail};
         my $url = 'https://api.twilio.com/2010-04-01/Accounts/'.$self->twilio_sid.'/'.$action.'.json';
         
         my %params = (
@@ -394,9 +395,12 @@ TWIML
                 $guard = undef;
                 my $api_response = decode_json($data);
                 if ($headers->{Status} =~ /^2/) {
-                    $callback->($api_response,$headers);
+                    $success->($api_response,$headers)
+                        if defined $success;
                 } else {
                     _log("Error placing call: ".$data);
+                    $fail->($api_response,$headers)
+                        if defined $fail;
                 }
 
             }
@@ -506,7 +510,7 @@ TWIML
     sub _log {
         my ($message,@params) = @_;
         if (scalar @params) {
-            $message = sprintf($message,@params);
+            $message = sprintf($message,map { ref($_) ? Data::Dumper::Dumper($_):$_ } @params);
         }
         say STDERR "[LOG] ".$message;
     }
