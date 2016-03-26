@@ -77,7 +77,7 @@ HomelyAlarm.prototype.listenEvents = {
 
 HomelyAlarm.prototype.severityActions = {
     "pushbullet": 3,
-    "email": 3
+    "email": 3,
     "sms": 2,
     "call": 1
 };
