@@ -4,6 +4,7 @@ package App::HomelyAlarm::Recipient {
     use Moose;
     no if $] >= 5.018000, warnings => qw(experimental::smartmatch);
     
+    use AnyEvent::HTTP;
     use Email::Stuffer;
     
     has 'prefered' => (
@@ -43,6 +44,12 @@ package App::HomelyAlarm::Recipient {
         predicate       => 'has_sms'
     );
     
+    has 'pushbullet' => (
+        is              => 'ro',
+        isa             => 'Str',
+        predicate       => 'has_pushbullet'
+    );
+    
     has 'call_id' => (
         is              => 'rw',
         isa             => 'Str',
@@ -59,6 +66,12 @@ package App::HomelyAlarm::Recipient {
         is              => 'rw',
         isa             => 'Str',
         predicate       => 'has_email_id'
+    );
+    
+    has 'pushbullet_id' => (
+        is              => 'rw',
+        isa             => 'Str',
+        predicate       => 'has_pushbullet_id'
     );
     
     sub set_success {
@@ -176,6 +189,37 @@ MAILBODY
                 App::HomelyAlarm::_log($data);
                 $self->call_id($data->{sid});
             },
+        );
+    }
+    
+    sub process_pushbullet {
+        my ($self,$message) = @_;
+        
+        my $app     = App::HomelyAlarm->instance;
+        App::HomelyAlarm::_log('Send pushbullet to %s',$self->email);
+        
+        my $guard;
+        $guard = http_request( 
+            'POST',
+            "https://api.pushbullet.com/v2/pushes", 
+            timeout => 120,
+            headers => {
+                Content_Type    => 'application/json',
+                'Access-Token'  => $self->pushbullet
+            },
+            body    => JSON::XS->encode({
+                type        => 'note',
+                title       => $message->title,
+                body        => $message->message.' ('.$message->type.')',
+            }),
+            sub {
+                my ($data,$headers) = @_;
+                use Data::Dumper;
+                {
+                  local $Data::Dumper::Maxdepth = 3;
+                  warn __FILE__.':line'.__LINE__.':'.Dumper($data,$headers);
+                }
+            }
         );
     }
 }

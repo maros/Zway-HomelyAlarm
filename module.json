@@ -51,6 +51,10 @@
                         "email": {
                             "order": 2,
                             "label": "__email_label__"
+                        },
+                        "pushbullet": {
+                            "order": 6,
+                            "label": "__pushbullet_label__"
                         }
                     }
                 }
@@ -137,7 +141,11 @@
                             "type" : "boolean"
                         },
                         "email": {
-                            "pattern": ".+@.+"
+                            "pattern": ".+@.+",
+                            "type": "string"
+                        },
+                        "pushbullet": {
+                            "type": "string"
                         }
                     }
                 }
