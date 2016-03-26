@@ -6,6 +6,7 @@
    "m_descr" : "Description<br>Check <a href=https://github.com/maros/Zway-HomelyAlarm>github.com/maros/Zway-HomelyAlarm</a> for detailed documentation.",
    "m_title" : "HomelyAlarm notification",
    "other_type_label" : "Other",
+   "pushbullet_label" : "Pushbullet Access Token",
    "recipients_label" : "Recipients",
    "secret_helper" : "Shared secret of the HomelyAlarm server",
    "secret_label" : "Server secret",

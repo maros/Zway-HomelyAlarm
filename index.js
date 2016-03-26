@@ -75,11 +75,12 @@ HomelyAlarm.prototype.listenEvents = {
     "warning":          "handleWarning"
 };
 
-HomelyAlarm.prototype.severityActions = [
-    "email",
-    "sms",
-    "call"
-];
+HomelyAlarm.prototype.severityActions = {
+    "pushbullet": 3,
+    "email": 3
+    "sms": 2,
+    "call": 1
+};
 
 HomelyAlarm.prototype.handleAlarm = function (eventConfig,event) {
     var self = this;
@@ -135,19 +136,19 @@ HomelyAlarm.prototype.handleEvent = function(action,event,recipients) {
     self.remoteCall(action,params);
 };
 
-HomelyAlarm.prototype.getRecipients = function(severity) {
+HomelyAlarm.prototype.getRecipients = function(eventSeverity) {
     var self = this;
     
-    severity = parseInt(severity);
+    eventSeverity = parseInt(eventSeverity);
     
     var recipients = [];
     _.each(self.config.recipients,function(element) {
         var recipientSeverity = parseInt(element.severity);
-        if (recipientSeverity > severity) {
+        if (recipientSeverity > eventSeverity) {
             return;
         }
         
-        var recipient = { severity: severity };
+        var recipient = { severity: eventSeverity };
         if (element.telephone) {
             if (element.call) {
                 recipient.call = element.telephone;
@@ -156,27 +157,30 @@ HomelyAlarm.prototype.getRecipients = function(severity) {
                 recipient.sms = element.telephone;
             }
         }
+        if (element.pushbullet) {
+            recipient.pushbullet = element.pushbullet;
+        }
         if (element.email) {
             recipient.email = element.email;
         }
         
         recipients.push(recipient);
         
-        var severityAction;
-        for(var s = severity-1; s >= 0; s--) {
-            severityAction = self.severityActions[s];
-            if (typeof(recipient[severityAction]) !== 'undefined') {
-                recipient.prefered = severityAction;
-                return;
+        // Find prefered communication method
+        var findSeverity = function(severity,action) {
+            if (typeof(recipient.prefered) === 'undefined'
+                && typeof(recipient[action]) !== 'undefined'
+                && eventSeverity === severity) {
+                recipient.prefered = action;
             }
+        };
+        
+        for(var s = severity-1; s >= 0; s--) {
+            _.each(self.severityActions,findSeverity);
         }
         
         for(var i = 0; i < severity; i++) {
-            severityAction = self.severityActions[i];
-            if (typeof(recipient[severityAction]) !== 'undefined') {
-                recipient.prefered = severityAction;
-                return;
-            }
+            _.each(self.severityActions,findSeverity);
         }
     });
     
