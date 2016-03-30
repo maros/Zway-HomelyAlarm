@@ -175,11 +175,11 @@ HomelyAlarm.prototype.getRecipients = function(eventSeverity) {
             }
         };
         
-        for(var s = severity-1; s >= 0; s--) {
+        for(var s = eventSeverity-1; s >= 0; s--) {
             _.each(self.severityActions,findSeverity);
         }
         
-        for(var i = 0; i < severity; i++) {
+        for(var i = 0; i < eventSeverity; i++) {
             _.each(self.severityActions,findSeverity);
         }
     });
