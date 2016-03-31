@@ -26,8 +26,6 @@ package App::HomelyAlarm::Recipient {
         weak_ref        => 1,
     );
     
-
-    
     foreach my $method (keys %App::HomelyAlarm::Type::METHODS) {
         has $method => (
             is              => 'ro',
@@ -68,7 +66,7 @@ package App::HomelyAlarm::Recipient {
         App::HomelyAlarm::_log('Processing recipient');
         
         my @methods = ($self->prefered);
-        foreach (qw(pusbullet sms email call)) {
+        foreach (qw(pushbullet sms email call)) {
             push(@methods,$_)
                 unless $_ ~~ \@methods;
         }
