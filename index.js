@@ -76,10 +76,10 @@ HomelyAlarm.prototype.listenEvents = {
 };
 
 HomelyAlarm.prototype.severityActions = {
-    "pushbullet": 3,
-    "email": 3,
+    "pushbullet": 1,
+    "email": 1,
     "sms": 2,
-    "call": 1
+    "call": 3
 };
 
 HomelyAlarm.prototype.handleAlarm = function (eventConfig,event) {
