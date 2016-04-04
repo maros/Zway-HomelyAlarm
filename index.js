@@ -164,26 +164,28 @@ HomelyAlarm.prototype.getRecipients = function(eventSeverity) {
             recipient.email = element.email;
         }
         
-        recipients.push(recipient);
-        
         // Find prefered communication method
-        var findSeverity = function(severity,action) {
+        var findSeverity = function(index,severity,action) {
             if (typeof(recipient.prefered) === 'undefined'
                 && typeof(recipient[action]) !== 'undefined'
-                && eventSeverity === severity) {
+                && severity == index) {
                 recipient.prefered = action;
             }
         };
         
-        for(var s = eventSeverity-1; s >= 0; s--) {
-            _.each(self.severityActions,findSeverity);
+        console.logJS(self.severityActions);
+        for(var s = eventSeverity; s >= 1; s--) {
+            _.each(self.severityActions,_.bind(findSeverity,self,s));
         }
         
-        for(var i = 0; i < eventSeverity; i++) {
-            _.each(self.severityActions,findSeverity);
+        for(var i = eventSeverity; i <= 3; i++) {
+            _.each(self.severityActions,_.bind(findSeverity,self,i));
         }
+        
+        recipients.push(recipient);
     });
     
+    console.logJS(recipients);
     return recipients;
 };
 
