@@ -167,8 +167,9 @@ MAILBODY
     }
     
     sub process_pushbullet {
-        my ($self,$message) = @_;
+        my ($self) = @_;
         
+        my $message = $self->message;
         my $app     = App::HomelyAlarm->instance;
         App::HomelyAlarm::_log('Send pushbullet to %s',$self->email);
         
@@ -178,10 +179,10 @@ MAILBODY
             "https://api.pushbullet.com/v2/pushes", 
             timeout => 120,
             headers => {
-                Content_Type    => 'application/json',
+                'Content-Type'  => 'application/json',
                 'Access-Token'  => $self->pushbullet
             },
-            body    => JSON::XS->encode({
+            body    => JSON::XS::encode_json({
                 type        => 'note',
                 title       => $message->title,
                 body        => $message->message.' ('.$message->type.')',
