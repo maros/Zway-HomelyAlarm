@@ -53,7 +53,7 @@ HomelyAlarm.prototype.stop = function () {
         _.each(self.listenEvents,function(handlerName,event){
             var type = element.type;
             if (type === 'other') {
-                type = 'security.'.element.otherType;
+                type = 'security.' + element.otherType;
             }
             self.controller.off(type+'.'+event,self.eventHandlers[index+event]);
         });
