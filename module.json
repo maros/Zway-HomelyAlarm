@@ -3,7 +3,9 @@
     "category":"notifications",
     "defaults":{
         "description":"__m_descr__",
-        "title":"__m_title__"
+        "title":"__m_title__",
+        "recipients": [],
+        "events": []
     },
     "dependencies":[],
     "homepage":"http://k-1.com",
