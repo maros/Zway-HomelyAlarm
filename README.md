@@ -1,8 +1,30 @@
 # Zway-HomelyAlarm
 
-Send notifications originating from various sources, such as security zones to alert
-selected recipients. This module consists of two parts, a zway automation module, and
+Send tamper proof notifications originating from various sources such as 
+security zones (Security Zone automation module) and rain detectors 
+(see Virtual Rain Sensor) to selected recipients. Notifications can be sent 
+using multiple methods.
+
+* Voice calls via twilio.com (with fall back to other transportation means when recipient does not pick up the phone)
+* SMS via twilio.com (with fall back to other transportation means if SMS cannot be delivered)
+* e-Mail
+* Pushbullet notifications
+
+This module consists of two parts, a zway automation module, and
 a server that needs to be deployed on a separate, publicly reachable, server.
+
+The server works closely with the SecurityZone module and ensures proper
+security even in case of tampering. In case of an delayed alarm (eg. 
+intrusion) the communication between the SecurityZone module and HomelyAlarm
+works as follows
+
+1. SecurityZone detects an open door and sends a delayed alarm event
+2. HomelyAlarm modules notifies the HomelyAlarm server
+3. If the SecurityZone module gets disarmed during the delay period the
+alarm on the server will be cancelled too.
+4. If tampering of the zway server occurs in the meantime (eg. by turning 
+off the electricity), and the server does not receive the alarm cancellation
+event, the notifications will be sent after the selected delay period.
 
 # Configuration
 
@@ -20,8 +42,8 @@ List of recipients
 
 ## recipients.severity
 
-Contact this recipient when event severity is greater than or equal to the event
-severity level.
+Contact this recipient when event severity is greater than or equal to the
+event severity level.
 
 ## recipients.telephone, recipients.email
 
@@ -41,7 +63,7 @@ Type of event to trigger notification.
 
 ## events.severity
 
-Severity level associated with the event
+Assign a severity level to this event type.
 
 # Events
 
@@ -89,6 +111,9 @@ go to Management > App Store Access and add 'k1_beta' access token.
 
 Then you need to install the alarm server on a second host that can be
 reached publicly.
+
+Just checkout this repository as stated above on the machine that will run
+the server. The server code is located in the server subdirectory. 
 
 TODO
 

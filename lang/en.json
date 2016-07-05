@@ -3,7 +3,7 @@
    "email_label" : "E-Mail Address",
    "events_label" : "Events",
    "eventtype_label" : "Event Type",
-   "m_descr" : "Description<br>Check <a href=https://github.com/maros/Zway-HomelyAlarm>github.com/maros/Zway-HomelyAlarm</a> for detailed documentation.",
+   "m_descr" : "This module will send alarm notifications via SMS, e-Mail, Pushbullet and Voice calls to the selected recipients on selected alarm events. Recipients and mode of notification are selected based on the severity of the alarm event. Alarm events can be emitted by the SecurityZone and Rain modules. Sending messages is done via a separate server that needs to run on another machine. <br>Check <a href=https://github.com/maros/Zway-HomelyAlarm>github.com/maros/Zway-HomelyAlarm</a> for detailed documentation and server installation manuals.",
    "m_title" : "HomelyAlarm notification",
    "other_type_label" : "Other",
    "pushbullet_label" : "Pushbullet Access Token",
