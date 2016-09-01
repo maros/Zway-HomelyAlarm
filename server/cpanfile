@@ -8,3 +8,4 @@ requires 'Digest::HMAC_SHA1';
 requires 'URI::Escape';
 requires 'MIME::Base64';
 requires 'Email::Stuffer';
+requires 'Twiggy::Server';
