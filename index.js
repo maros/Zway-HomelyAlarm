@@ -42,8 +42,6 @@ HomelyAlarm.prototype.init = function (config) {
             self.eventHandlers[index+event] = handler;
         });
     });
-    
-    executeFile(self.moduleBasePath()+"/sha1.js");
 };
 
 HomelyAlarm.prototype.stop = function () {
@@ -208,11 +206,8 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
     console.log('[HomelyAlarm] Remote request to '+url+' with '+queryString);
 
     // Build signature
-    var sha = new jsSHA("SHA-1", "TEXT");
-    sha.setHMACKey(self.config.secret, "TEXT");
-    sha.update(queryString);
-    var signature = sha.getHMAC("HEX");
-    
+    var signature = crypto.hmac('sha1',self.config.secret,queryString);
+
     // HTTP request
     http.request({
         method: 'POST',
