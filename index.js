@@ -219,7 +219,9 @@ HomelyAlarm.prototype.remoteCall = function(action,params) {
             "X-HomelyAlarm-Signature": signature
         },
         async: true,
-        success: function(response) {},
+        success: function(response) {
+            console.log('[HomelyAlarm] Successfully called alarm server');
+        },
         error: function(response) {
             console.error('[HomelyAlarm] Could not call alarm server: '+response.status );
         }
