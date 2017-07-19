@@ -49,7 +49,7 @@ package App::HomelyAlarm::Message {
 
     has 'timer' => (
         is              => 'rw',
-        isa             => 'ArrayRef',
+        #isa             => 'ArrayRef',
         clearer         => 'clear_timer',
     );
 
