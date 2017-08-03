@@ -394,17 +394,26 @@ TWIML
             sub {
                 my ($data,$headers) = @_;
 
+                _log("Got Twilio response status %i",$headers->{Status});
                 $guard = undef;
-                my $api_response = decode_json($data);
-                if ($headers->{Status} =~ /^2/) {
-                    $success->($api_response,$headers)
-                        if defined $success;
-                } else {
-                    _log("Error placing call: ".$data);
-                    $fail->($api_response,$headers)
+                my $api_response = try {
+                    decode_json($data);
+                } catch {
+                    _log("Error decoding Twilio JSON response: %s",$data);
+                    $fail->({},$headers)
                         if defined $fail;
+                    return;
+                };
+                if (defined $api_response) {
+                    if ($headers->{Status} =~ /^2/) {
+                        $success->($api_response,$headers)
+                            if defined $success;
+                    } else {
+                        _log("Error placing call: %s",$data);
+                        $fail->($api_response,$headers)
+                            if defined $fail;
+                    }
                 }
-
             }
         );
     }

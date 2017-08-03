@@ -190,6 +190,7 @@ MAILBODY
             sub {
                 my ($data,$headers) = @_;
                 $guard = undef;
+                App::HomelyAlarm::_log("Got Pushbullet response status %i",$headers->{Status});
                 if ($headers->{Status} =~ /^2/) {
                     $self->pushbullet_id('ok');
                 } else {
