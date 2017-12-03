@@ -223,6 +223,7 @@ package App::HomelyAlarm {
         my $data = _body_data($req);
 
         unless ($self->has_timer($data->{type})) {
+            _log("Delayed %s alarm timer start",$data->{type});
             $self->add_timer($data->{type},$data->{delay},$data);
         }
 
@@ -377,6 +378,8 @@ TWIML
         }
         $content = join('&', @args) || '';
 
+        _log('Twilio request %s %s (%s)',$method, $url, $content);
+
         if( $method eq 'GET' ) {
             $url .= '?' . $content;
         } elsif ($method eq 'POST') {
@@ -384,26 +387,27 @@ TWIML
             $params{body} = $content;
         }
 
-        _log("Twilio request $method $url");
 
         my $guard;
         $guard = http_request(
-            $method,
-            $url,
+            $method => $url,
             %params,
             sub {
                 my ($data,$headers) = @_;
 
                 _log("Got Twilio response status %i",$headers->{Status});
                 $guard = undef;
-                my $api_response = try {
-                    decode_json($data);
-                } catch {
-                    _log("Error decoding Twilio JSON response: %s",$data);
-                    $fail->({},$headers)
-                        if defined $fail;
-                    return;
-                };
+                my $api_response;
+                if ($data) {
+                    $api_response = try {
+                        decode_json($data);
+                    } catch {
+                        _log("Error decoding Twilio JSON response: %s",$data);
+                        $fail->({},$headers)
+                            if defined $fail;
+                        return;
+                    };
+                }
                 if (defined $api_response) {
                     if ($headers->{Status} =~ /^2/) {
                         $success->($api_response,$headers)
@@ -494,15 +498,19 @@ TWIML
         my $digest      = encode_base64(hmac_sha1($key, $self->twilio_authtoken));
         chomp($digest);
 
-        unless (defined $sid
-            && $sid eq $self->twilio_sid
-            && defined $signature
-            && $signature eq $digest) {
-            _log('Could not authenticate call');
-            return 0;
+        if ( ! defined $sid) {
+            _log('Could not authenticate call: Missing sid');
+        } elsif ($sid ne $self->twilio_sid) {
+            _log('Could not authenticate call: Invalid sid. Expected "%s" but got "%s"',$self->twilio_sid,$sid);
+        } elsif ( ! defined $signature) {
+            _log('Could not authenticate call: Missing signature');
+        } elsif ($signature ne $digest) {
+            _log('Could not authenticate call: Invalid signature. Expected "%s" but got "%s"',$digest,$signature);
+        } else {
+            return 1;
         }
 
-        return 1;
+        return 0;
     }
 
     sub add_timer {
@@ -521,8 +529,9 @@ TWIML
     sub _log {
         my ($message,@params) = @_;
         if (scalar @params) {
-            $message = sprintf($message,map { ref($_) ? Data::Dumper::Dumper($_):$_ } @params);
+            $message = sprintf($message,map { (ref($_) ? Data::Dumper::Dumper($_):$_) // '' } @params);
         }
+        local $| = 1;
         say STDERR "[LOG] ".$message;
     }
 
@@ -555,7 +564,7 @@ TWIML
     sub _reply_error {
         my ($code,$message,$req) = @_;
 
-        _log("Invalid request to %s: %s (%i)",$req->uri,$message,$code);
+        _log("Invalid request to %s: %s (%i)",$req->uri->canonical,$message,$code);
         return [
             $code,
             [ 'Content-Type' => 'application/json' ],
