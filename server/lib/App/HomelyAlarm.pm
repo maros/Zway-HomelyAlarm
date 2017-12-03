@@ -194,7 +194,10 @@ package App::HomelyAlarm {
             my $authen  = join('_','authenticate',$paths[0]);
 
             unless ($self->has_self_url) {
-                my $url = $req->scheme.'://'.$req->env->{HTTP_HOST};
+                my $url = ($req->env->{X_FORWARDED_SCHEME} || $req->scheme)
+                    .'://'
+                    .($req->env->{X_FORWARDED_HOST} || $req->env->{HTTP_HOST});
+                _log("Set self_url to %s",$url);
                 $self->self_url($url);
             }
 
